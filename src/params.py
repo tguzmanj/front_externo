@@ -11,7 +11,7 @@ import pandas as pd
 sys.path.append("/app/data/raw")
 
 # Importar df
-marcas = pd.read_csv('marcas.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')
+marcas = pd.read_csv('/app/data/raw/marcas.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')
 
 alternativas = {'lapso_predefinido':['3 meses', '6 meses', '12 meses', 'Crear mi propio rango'],
                 'lapso_fijo':['3 meses', '6 meses', '12 meses'],
