@@ -1,0 +1,80 @@
+{
+  "1_info_general": {
+    "holding": "",
+    "agencia": "",
+    "anunciante": "",
+    "comentario": "",
+	"campaña": ""
+  },
+  "2_info_lifestyle": {
+    "lifestyle_seleccionado": "",
+    "objetivo": ""
+  },
+  "3_info_cross": {
+    "categorias_f": "",
+    "lapso": "",	
+    "marcas": "", 
+	"keywords": "",
+	"precio": "",
+	"canal_compra": ""
+  },
+  "4_info_arquetipo_negocio": {
+    "arquetipo": ""
+  },
+  "5_info_arquetipo_compra": {
+    "arquetipo": "",
+    "categorias_f": "",
+    "lapso": "",
+    "marcas": "",
+    "precio": ""
+  },
+  "6_info_arquetipo_deluxe": {
+    "nivel_propension": "",
+    "categorias_f": ""
+  },
+  "7_info_sociodemografica": {
+    "cust_gender": "",
+   	"cust_age": "",
+   	"cust_gse": "",
+   	"cust_education_level": "",
+   	"cust_marital_status": "",
+   	"regiones": "",
+   	"cust_city": "",
+	"no_of_vehicle": "",
+	"vehicle_type": "",
+	"vehicle_brand": "",
+	"vehicle_yr": "",
+	"vehicle_appraised_amt": "",
+	"no_of_property":"", 
+	"property_type":"", 
+	"property_value": "", 
+	"property_built_mts": "" 
+  },
+  "8_info_cmr": { 
+    "lapso": "",
+   	"comercios": "",
+   	"comercios_exclusion": "",
+   	"keywords": "",
+   	"keywords_exclusion": "",
+   	"tipo_compra": "",
+   	"tipo_compra_exclusion": "",
+   	"precio": "",
+   	"precio_exclusion": "",
+	"comentario": ""
+  },
+  "9_ranking_transaccional": { 
+    "unidad_de_negocio": "",
+   	"variable_trx": "",
+   	"n_mejores_clientes": "",
+   	"canal_compra": ""
+  },
+  "10_loyalty": { 
+    "lapso": "",
+   	"acumulacion": "",
+   	"canje": ""
+  },
+  "11_seguros": { 
+    "lapso": "",
+   	"seguros": ""
+  }
+}  

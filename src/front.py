@@ -394,7 +394,7 @@ def main():
     if submit_button:
         
         # Load data from JSON file
-        with open(path+'/'+'json_vacio.json', 'r') as f:
+        with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
             
         json_output["1_info_general"]["holding"] = ''
