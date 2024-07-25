@@ -5,10 +5,7 @@ Created on Mon Jul 15 14:14:27 2024
 @author: a.campos.mercado
 """
 
-import sys
 import pandas as pd
-
-sys.path.append("/app/data/raw")
 
 # Importar df
 marcas = pd.read_csv('data/raw/marcas.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')

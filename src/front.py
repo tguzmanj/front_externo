@@ -14,11 +14,7 @@ from PIL import Image
 import sys
 import streamlit_authenticator as stauth
 
-sys.path.append("/app/src")
 from params import alternativas
-
-sys.path.append("/app/src/conn")
-
 
 # =============================================================================
 # Funciones
@@ -46,7 +42,7 @@ def eliminar_antes_del_guion(texto):
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
 
-logo = Image.open('logo.png')
+logo = Image.open('src/logo.png')
 half = 0.25
 logo = logo.resize( [int(half * s) for s in logo.size] )
 
@@ -493,7 +489,7 @@ def main():
 # Autenticación
 # =============================================================================
 
-with open('login.yml') as file:
+with open('src/conn/login.yml') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
 authenticator = stauth.Authenticate(
