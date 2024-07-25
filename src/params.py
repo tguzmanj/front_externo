@@ -5,6 +5,7 @@ Created on Mon Jul 15 14:14:27 2024
 @author: a.campos.mercado
 """
 
+import sys
 import pandas as pd
 
 sys.path.append("/app/src/data/raw")
