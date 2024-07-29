@@ -15,6 +15,7 @@ from PIL import Image
 import streamlit_authenticator as stauth
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.files.file import File
 
 from calendar import month_abbr
 
@@ -141,6 +142,55 @@ def cargar_archivo_a_sharepoint(archivo_a_subir, nombre_de_subida, site_url, use
         target_folder = ctx.web.get_folder_by_server_relative_url(folder_url)
         target_file = target_folder.upload_file(nombre_de_subida, archivo_a_subir)
         ctx.execute_query()
+
+def cargar_correlativo_desde_sharepoint(archivo_con_el_correlativo, site_url, username, password, folder_url):
+    """
+    Descarga desde Sharepoint un archivo con el último correlativo utilizado
+
+    Parameters
+    ----------
+    archivo_con_el_correlativo : str
+        Nombre del archivo que tiene el correlativo.
+    site_url : str
+        URL del sitio donde existe la carpeta destino
+        E.g.: 'https://my-business.sharepoint.com/sites/site-name'
+    username : str
+        Nombre de usuario del SHarepoint. Debe incluir el email completo
+    password : str
+        Contraseña para ingresar a SharePoint   
+    folder_url: str
+        Ruta de la carpeta en SharePoint donde se subirán los archivos. 
+        La URL debe partir desde "sites/"
+        E.g.: '/sites/site-name/Documentos%20compartidos/General/Destino'
+
+    Returns
+    -------
+    int: Número correlativo.
+
+    """
+    # Autenticación
+    auth_context = AuthenticationContext(site_url)
+    if auth_context.acquire_token_for_user(username, password):
+        ctx = ClientContext(site_url, auth_context)
+        web = ctx.web
+        ctx.load(web)
+        ctx.execute_query()
+        
+        folder = ctx.web.get_folder_by_server_relative_url(folder_url)
+        files = folder.files
+        ctx.load(files)
+        ctx.execute_query()
+    
+        # Listar archivos
+        for file in files:
+            if file.properties['Name'] == archivo_con_el_correlativo:
+        
+                file_url = file.properties['ServerRelativeUrl']
+                file_loaded = File.open_binary(ctx, file_url)
+                # Cargando archivo
+                correlativo = json.loads(file_loaded.content)
+    
+    return correlativo
 
 # =============================================================================
 # Parámetros
@@ -502,7 +552,10 @@ def main():
         # Load data from JSON file
         with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
-            
+        
+        # Incrementar el ID correlativo y guardarlo
+        st.session_state.correlativo += 1
+        
         json_output["1_info_general"]["holding"] = holding
         json_output["1_info_general"]["agencia"] = ''
         json_output["1_info_general"]["anunciante"] = anunciante
@@ -512,7 +565,7 @@ def main():
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
         json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-aXX".replace(" ", "-")
+        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "-")
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
         json_output["2_info_lifestyle"]["objetivo"] = lifestyle_objetivo
@@ -602,7 +655,13 @@ def main():
                                     st.secrets["FOLDER_URL"])
         
         st.write(json_output)
-        
+
+        cargar_archivo_a_sharepoint(st.session_state.correlativo, 
+                                    'ultimo_correlativo_usado.txt', 
+                                    st.secrets["SITE_URL"], 
+                                    st.secrets["USERNAME"], 
+                                    st.secrets["PASSWORD"], 
+                                    st.secrets["FOLDER_URL"])
 
 
 
@@ -639,6 +698,15 @@ if __name__ == "__main__":
     
     if st.session_state["authentication_status"]:
         
+        # Inicializar el contador de ID
+        if 'correlativo' not in st.session_state:
+            # Cargar último correlativo utilizado
+            st.session_state.correlativo = cargar_correlativo_desde_sharepoint('ultimo_correlativo_usado.txt', 
+                                                                     st.secrets["SITE_URL"], 
+                                                                     st.secrets["USERNAME"], 
+                                                                     st.secrets["PASSWORD"], 
+                                                                     st.secrets["FOLDER_URL"])
+            
         parte_superior()
         
         if st.session_state.siguiente:
