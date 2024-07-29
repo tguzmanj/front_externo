@@ -129,7 +129,7 @@ def cargar_archivo_a_sharepoint(archivo_a_subir, nombre_de_subida, site_url, use
         ctx.load(web)
         ctx.execute_query()
     
-        print(f"Conectado a: {web.properties['Title']}")
+        st.write(f"Conectado a: {web.properties['Title']}")
     
         folder = ctx.web.get_folder_by_server_relative_url(folder_url)
         files = folder.files
@@ -590,7 +590,7 @@ def main():
         json_output["11_seguros"]["seguros"] = sf_seguros
 
         cargar_archivo_a_sharepoint(json_output, 
-                                    json_output["1_info_general"]["nombre_unico"], 
+                                    json_output["1_info_general"]["nombre_unico"]+'.json', 
                                     st.secrets["SITE_URL"], 
                                     st.secrets["USERNAME"], 
                                     st.secrets["PASSWORD"], 
