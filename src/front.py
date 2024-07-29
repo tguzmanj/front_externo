@@ -11,11 +11,11 @@ from yaml.loader import SafeLoader
 import streamlit as st
 import datetime
 from PIL import Image
-import sys
 import streamlit_authenticator as stauth
+from office365.sharepoint.client_context import ClientContext
+from office365.runtime.auth.authentication_context import AuthenticationContext
 
 from calendar import month_abbr
-import datetime
 
 from params import alternativas
 
@@ -91,6 +91,55 @@ def eliminar_antes_del_guion(texto):
     partes = texto.split(' - ', 1)
     # Retornamos la segunda parte, que es lo que está después del guion
     return partes[1] if len(partes) > 1 else texto
+
+def cargar_archivo_a_sharepoint(archivo_a_subir, nombre_de_subida, site_url, username, password, folder_url):
+    """
+    Sube un archivo a una carpeta de SharePoint
+
+    Parameters
+    ----------
+    nombre_de_subida : variable
+        Archivo que se quiere subir.
+    nombre_de_subida : str
+        Qué nombre se le quiere poner al archivo subido. Debe ir con su extensión.
+        Ejemplo: 'archivo_a_subir.json'
+    site_url : str
+        URL del sitio donde existe la carpeta destino
+        E.g.: 'https://my-business.sharepoint.com/sites/site-name'
+    username : str
+        Nombre de usuario del SHarepoint. Debe incluir el email completo
+    password : str
+        Contraseña para ingresar a SharePoint   
+    folder_url: str
+        Ruta de la carpeta en SharePoint donde se subirán los archivos. 
+        La URL debe partir desde "sites/"
+        E.g.: '/sites/site-name/Documentos%20compartidos/General/Destino'
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    # Autenticación
+    auth_context = AuthenticationContext(site_url)
+    if auth_context.acquire_token_for_user(username, password):
+        ctx = ClientContext(site_url, auth_context)
+        web = ctx.web
+        ctx.load(web)
+        ctx.execute_query()
+    
+        print(f"Conectado a: {web.properties['Title']}")
+    
+        folder = ctx.web.get_folder_by_server_relative_url(folder_url)
+        files = folder.files
+        ctx.load(files)
+        ctx.execute_query()
+        
+        # Subir el JSON editado directamente
+        target_folder = ctx.web.get_folder_by_server_relative_url(folder_url)
+        target_file = target_folder.upload_file(nombre_de_subida, archivo_a_subir)
+        ctx.execute_query()
 
 # =============================================================================
 # Parámetros
@@ -540,7 +589,13 @@ def main():
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = sf_seguros
 
-
+        cargar_archivo_a_sharepoint(json_output, 
+                                    json_output["1_info_general"]["nombre_unico"], 
+                                    st.secrets["SITE_URL"], 
+                                    st.secrets["USERNAME"], 
+                                    st.secrets["PASSWORD"], 
+                                    st.secrets["FOLDER_URL"])
+        
         st.write(json_output)
         
 
