@@ -7,6 +7,7 @@ Created on Mon Jul 29 11:41:25 2024
 
 import json
 import yaml
+import io
 from yaml.loader import SafeLoader
 import streamlit as st
 import datetime
@@ -129,7 +130,7 @@ def cargar_archivo_a_sharepoint(archivo_a_subir, nombre_de_subida, site_url, use
         ctx.load(web)
         ctx.execute_query()
     
-        st.write(f"Conectado a: {web.properties['Title']}")
+        # st.write(f"Conectado a: {web.properties['Title']}")
     
         folder = ctx.web.get_folder_by_server_relative_url(folder_url)
         files = folder.files
@@ -588,8 +589,12 @@ def main():
             json_output["10_loyalty"]["canje"] = [lyty_canje_rango, lyty_canje_desde]
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = sf_seguros
-
-        cargar_archivo_a_sharepoint(json_output, 
+                
+        # Convertir el diccionario a JSON
+        datos_json = json.dumps(json_output, indent=4).encode('utf-8')
+        file_content = io.BytesIO(datos_json)
+    
+        cargar_archivo_a_sharepoint(file_content.getvalue(), 
                                     json_output["1_info_general"]["nombre_unico"]+'.json', 
                                     st.secrets["SITE_URL"], 
                                     st.secrets["USERNAME"], 

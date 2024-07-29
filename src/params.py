@@ -7,7 +7,7 @@ Created on Mon Jul 15 14:14:27 2024
 
 import pandas as pd
 
-# Importar df
+# Importar df de marcas de retail
 marcas = pd.read_csv('data/raw/marcas.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')
 
 alternativas = {'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS", "Sin holding"],
