@@ -10,7 +10,8 @@ import pandas as pd
 # Importar df
 marcas = pd.read_csv('data/raw/marcas.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')
 
-alternativas = {'lapso_predefinido':['3 meses', '6 meses', '12 meses', 'Crear mi propio rango'],
+alternativas = {'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS", "Sin holding"],
+                'lapso_predefinido':['3 meses', '6 meses', '12 meses', 'Crear mi propio rango'],
                 'lapso_fijo':['3 meses', '6 meses', '12 meses'],
                 'rango_opciones':["Mayor o igual a", "Menor o igual a", "Mayor a", "Menor a", "Igual a", "Rango"],
                 'marcas': [*marcas['marcas']],

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jul 23 15:14:24 2024
+Created on Mon Jul 29 11:41:25 2024
 
 @author: a.campos.mercado
 """
@@ -14,17 +14,74 @@ from PIL import Image
 import sys
 import streamlit_authenticator as stauth
 
+from calendar import month_abbr
+import datetime
+
 from params import alternativas
 
 # =============================================================================
 # Funciones
 # =============================================================================
 
+# Función para colapsar el expander
+def collapse_expander():
+    st.session_state.expander_open = False
+    
 def parte_superior():
     
-    st.image(logo)
-    st.title("Formulario Falabella Audiencias")
+    global holding
+    global anunciante
+    global campania
+    global mes_implementacion
+    global solicitada_cliente
+    global descripcion
+    
     authenticator.logout("Logout")
+    
+    # Crear las 3 columnas
+    col_sup_1, col_sup_2 = st.columns([2,3])
+    
+    with col_sup_1:
+        
+        st.image(logo)
+        st.title("Formulario Falabella Audiencias")
+    
+    with col_sup_2:
+    
+        with st.expander('Información de la audiencia', expanded = st.session_state.expander_open):
+            col_cont_1, col_cont_2, col_cont_3 = st.columns(3)
+            
+            with col_cont_1:
+                holding = st.selectbox('Variable', [""]+alternativas['holding'], key='holding')
+                anunciante = st.selectbox('Variable', [""]+alternativas['holding'], key='anunciante')
+                campania = st.text_input("Campaña", key='campania')
+            
+            with col_cont_2:
+                with st.container(border=True):
+                    st.write('Mes de implementación de campaña')
+                    # Basado en https://github.com/streamlit/streamlit/issues/2463#issuecomment-1241604897
+                    this_year = datetime.date.today().year
+                    this_month = datetime.date.today().month
+                    report_year = st.selectbox('Año', [this_year, this_year+1], label_visibility ='hidden')
+                    month_abbr_ = month_abbr[1:]
+                    report_month_str = st.radio('Mes', month_abbr_, index=this_month - 1, horizontal=True, label_visibility ='hidden')
+                    report_month = month_abbr_.index(report_month_str) + 1
+                    mes_implementacion = [report_year, report_month]
+                    
+            with col_cont_3:
+                solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None)
+                descripcion = st.text_input("Breve descripción de la audiencia a solicitar", key = 'descripcion')
+                # Botón de avanzar
+                if st.button("Siguiente"):
+                    if holding and anunciante: # Verificar que campos obligatorios hayan sido rellenados
+                        # Aquí puedes manejar la lógica de envío de datos
+                        collapse_expander()  # Colapsar el expander
+                        st.session_state.siguiente = True
+                        st.rerun()
+                    else:
+                        st.warning("Por favor, rellena todos los campos obligatorios.")
+                    
+                    
 
 def formatear_precio(x):
     return f'${x:,}'.replace(',', '.')
@@ -67,7 +124,6 @@ sf_seguros = alternativas['sf_seguros']
 
 def main():
     
-
     # Crear las 5 columnas
     col1, col2, col3, col4, col5 = st.columns(5)
     
@@ -157,13 +213,13 @@ def main():
         if cross_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_cross_2:
-                cross_precio_desde = st.text_input("Precio desde", "", key='cross_precio_desde')
+                cross_precio_desde = st.number_input("Precio desde", value=None, key='cross_precio_desde')
             # Input para el precio "hasta"
             with col_cross_3:
-                cross_precio_hasta = st.text_input("Precio hasta", "", key='cross_precio_hasta')
+                cross_precio_hasta = st.number_input("Precio hasta", value=None, key='cross_precio_hasta')
         else:
             with col_cross_2:
-                cross_precio_desde = st.text_input("Precio", "", key='cross_precio_desde')
+                cross_precio_desde = st.number_input("Precio", value=None, key='cross_precio_desde')
     
         # Canal de compra #####################################################
         cross_canal_compra = st.selectbox('Canal de compra', ["", "Solo online", "Solo offline"], key='cross_canal_compra')
@@ -242,13 +298,13 @@ def main():
         if cmr_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_cmr_precio_2:
-                cmr_precio_desde = st.text_input("Precio desde", "", key='cmr_precio_desde')
+                cmr_precio_desde = st.number_input("Precio desde", value=None, key='cmr_precio_desde')
             # Input para el precio "hasta"
             with col_cmr_precio_3:
-                cmr_precio_hasta = st.text_input("Precio hasta", "", key='cmr_precio_hasta')
+                cmr_precio_hasta = st.number_input("Precio hasta", value=None, key='cmr_precio_hasta')
         else:
             with col_cmr_precio_2:
-                cmr_precio_desde = st.text_input("Precio", "", key='cmr_precio_desde')
+                cmr_precio_desde = st.number_input("Precio", value=None, key='cmr_precio_desde')
         
         # Layout para tener las entradas en la misma fila
         col_cmr_exclusion_1, col_cmr_exclusion_2,  col_cmr_exclusion_3 = st.columns([2, 1, 1])
@@ -259,13 +315,13 @@ def main():
         if cmr_precio_exclusion_rango == "Rango":
             # Input para el precio "desde"
             with col_cmr_exclusion_2:
-                cmr_precio_exclusion_desde = st.text_input("Precio desde", "", key='cmr_precio_exclusion_desde')
+                cmr_precio_exclusion_desde = st.number_input("Precio desde", value=None, key='cmr_precio_exclusion_desde')
             # Input para el precio "hasta"
             with col_cmr_exclusion_3:
-                cmr_precio_exclusion_hasta = st.text_input("Precio hasta", "", key='cmr_precio_exclusion_hasta')
+                cmr_precio_exclusion_hasta = st.number_input("Precio hasta", value=None, key='cmr_precio_exclusion_hasta')
         else:
             with col_cmr_exclusion_2:
-                cmr_precio_exclusion_desde = st.text_input("Precio", "", key='cmr_precio_exclusion_desde')
+                cmr_precio_exclusion_desde = st.number_input("Precio", value=None, key='cmr_precio_exclusion_desde')
                 
         # Tipo compra #########################################################
         cmr_tipo_compra = st.selectbox('Tipo de compra comercios a incluir', ["", "Solo nacional", "Solo internacional"], key='cmr_tipo_compra')
@@ -397,11 +453,16 @@ def main():
         with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
             
-        json_output["1_info_general"]["holding"] = ''
+        json_output["1_info_general"]["holding"] = holding
         json_output["1_info_general"]["agencia"] = ''
-        json_output["1_info_general"]["anunciante"] = ''
+        json_output["1_info_general"]["anunciante"] = anunciante
         json_output["1_info_general"]["comentario"] = ''
-        json_output["1_info_general"]["campania"] = ''
+        json_output["1_info_general"]["solicitada_cliente"] = solicitada_cliente
+        json_output["1_info_general"]["descripcion"] = descripcion
+        json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
+        json_output["1_info_general"]["campania"] = campania
+        json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-aXX".replace(" ", "-")
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
         json_output["2_info_lifestyle"]["objetivo"] = lifestyle_objetivo
@@ -412,7 +473,7 @@ def main():
         if cross_precio_rango == "Rango":
             json_output["3_info_cross"]["precio"] = [cross_precio_desde, cross_precio_hasta]
         else:
-            json_output["3_info_cross"]["precio"] = cross_precio_desde
+            json_output["3_info_cross"]["precio"] = [cross_precio_rango, cross_precio_desde]
         json_output["3_info_cross"]["canal_compra"] = cross_canal_compra
        
         json_output["4_info_arquetipo_negocio"]["arquetipo"] = arq_neg_arq_neg
@@ -424,7 +485,7 @@ def main():
         if arq_compra_precio_rango == "Rango":
             json_output["5_info_arquetipo_compra"]["precio"] = [arq_compra_precio_desde, arq_compra_precio_hasta]
         else:
-            json_output["5_info_arquetipo_compra"]["precio"] = arq_compra_precio_desde
+            json_output["5_info_arquetipo_compra"]["precio"] = [arq_compra_precio_rango, arq_compra_precio_desde]
 
         json_output["7_info_sociodemografica"]["cust_gender"] = sociodem_sexo
         json_output["7_info_sociodemografica"]["cust_age"] = sociodem_edad
@@ -436,15 +497,15 @@ def main():
         if sociodem_n_vehiculos_rango == "Rango":
             json_output["7_info_sociodemografica"]["no_of_vehicle"] = [sociodem_n_vehiculos_desde, sociodem_n_vehiculos_hasta]
         else:
-            json_output["7_info_sociodemografica"]["no_of_vehicle"] = sociodem_n_vehiculos_desde
+            json_output["7_info_sociodemografica"]["no_of_vehicle"] = [sociodem_n_vehiculos_rango, sociodem_n_vehiculos_desde]
         if sociodem_anio_vehiculos_rango == "Rango":
             json_output["7_info_sociodemografica"]["vehicle_yr"] = [sociodem_anio_vehiculos_desde, sociodem_anio_vehiculos_hasta]
         else:
-            json_output["7_info_sociodemografica"]["vehicle_yr"] = sociodem_anio_vehiculos_desde
+            json_output["7_info_sociodemografica"]["vehicle_yr"] = [sociodem_anio_vehiculos_rango, sociodem_anio_vehiculos_desde]
         if sociodem_valor_vehiculos_rango == "Rango":
             json_output["7_info_sociodemografica"]["vehicle_appraised_amt"] = [sociodem_valor_vehiculos_desde, sociodem_valor_vehiculos_hasta]
         else:
-            json_output["7_info_sociodemografica"]["vehicle_appraised_amt"] = sociodem_valor_vehiculos_desde
+            json_output["7_info_sociodemografica"]["vehicle_appraised_amt"] = [sociodem_valor_vehiculos_rango, sociodem_valor_vehiculos_desde]
         json_output["7_info_sociodemografica"]["vehicle_type"] = sociodem_tipo_vehiculo
         json_output["7_info_sociodemografica"]["vehicle_brand"] = sociodem_marca_vehiculo
      
@@ -456,11 +517,11 @@ def main():
         if cmr_precio_rango == "Rango":
             json_output["8_info_cmr"]["precio"] = [cmr_precio_desde, cmr_precio_hasta]
         else:
-            json_output["8_info_cmr"]["precio"] = cmr_precio_desde
+            json_output["8_info_cmr"]["precio"] = [cmr_precio_rango, cmr_precio_desde]
         if cmr_precio_exclusion_rango == "Rango":
             json_output["8_info_cmr"]["precio_exclusion"] = [cmr_precio_exclusion_desde, cmr_precio_exclusion_hasta]
         else:
-            json_output["8_info_cmr"]["precio_exclusion"] = cmr_precio_exclusion_desde
+            json_output["8_info_cmr"]["precio_exclusion"] = [cmr_precio_exclusion_rango, cmr_precio_exclusion_desde]
   
         json_output["9_ranking_transaccional"]["unidad_de_negocio"] = rnk_trx_bu
         json_output["9_ranking_transaccional"]["variable_trx"] = rnk_trx_kpi
@@ -471,11 +532,11 @@ def main():
         if lyty_acumul_rango == "Rango":
             json_output["10_loyalty"]["acumulacion"] = [lyty_acumul_desde, lyty_acumul_hasta]
         else:
-            json_output["10_loyalty"]["acumulacion"] = lyty_acumul_desde
+            json_output["10_loyalty"]["acumulacion"] = [lyty_acumul_rango, lyty_acumul_desde]
         if lyty_canje_rango == "Rango":
             json_output["10_loyalty"]["canje"] = [lyty_canje_desde, lyty_canje_hasta]
         else:
-            json_output["10_loyalty"]["canje"] = lyty_canje_desde
+            json_output["10_loyalty"]["canje"] = [lyty_canje_rango, lyty_canje_desde]
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = sf_seguros
 
@@ -509,10 +570,20 @@ authenticator = stauth.Authenticate(
 if __name__ == "__main__":
     
     authenticator.login()
+    if 'siguiente' not in st.session_state:
+        st.session_state.siguiente = False
+    
+    # Inicializar la variable de sesión para controlar el estado del expander
+    if 'expander_open' not in st.session_state:
+        st.session_state.expander_open = True
     
     if st.session_state["authentication_status"]:
+        
         parte_superior()
-        main()
+        
+        if st.session_state.siguiente:
+            main()
+            
     elif st.session_state["authentication_status"] is False:
         st.error('Username/password is incorrect')
     elif st.session_state["authentication_status"] is None:
