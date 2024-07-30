@@ -647,21 +647,21 @@ def main():
         datos_json = json.dumps(json_output, indent=4).encode('utf-8')
         file_content = io.BytesIO(datos_json)
     
-        cargar_archivo_a_sharepoint(file_content.getvalue(), 
-                                    json_output["1_info_general"]["nombre_unico"]+'.json', 
-                                    st.secrets["SITE_URL"], 
-                                    st.secrets["USERNAME"], 
-                                    st.secrets["PASSWORD"], 
-                                    st.secrets["FOLDER_URL"])
+        # cargar_archivo_a_sharepoint(file_content.getvalue(), 
+        #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
+        #                             st.secrets["SITE_URL"], 
+        #                             st.secrets["USERNAME"], 
+        #                             st.secrets["PASSWORD"], 
+        #                             st.secrets["FOLDER_URL"])
         
         st.write(json_output)
 
-        cargar_archivo_a_sharepoint(st.session_state.correlativo, 
-                                    'ultimo_correlativo_usado.txt', 
-                                    st.secrets["SITE_URL"], 
-                                    st.secrets["USERNAME"], 
-                                    st.secrets["PASSWORD"], 
-                                    st.secrets["FOLDER_URL"])
+        # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
+        #                             'ultimo_correlativo_usado.txt', 
+        #                             st.secrets["SITE_URL"], 
+        #                             st.secrets["USERNAME"], 
+        #                             st.secrets["PASSWORD"], 
+        #                             st.secrets["FOLDER_URL"])
 
 
 
@@ -698,14 +698,14 @@ if __name__ == "__main__":
     
     if st.session_state["authentication_status"]:
         
-        # Inicializar el contador de ID
-        if 'correlativo' not in st.session_state:
-            # Cargar último correlativo utilizado
-            st.session_state.correlativo = cargar_correlativo_desde_sharepoint('ultimo_correlativo_usado.txt', 
-                                                                     st.secrets["SITE_URL"], 
-                                                                     st.secrets["USERNAME"], 
-                                                                     st.secrets["PASSWORD"], 
-                                                                     st.secrets["FOLDER_URL"])
+        # # Inicializar el contador de ID
+        # if 'correlativo' not in st.session_state:
+        #     # Cargar último correlativo utilizado
+        #     st.session_state.correlativo = cargar_correlativo_desde_sharepoint('ultimo_correlativo_usado.txt', 
+        #                                                              st.secrets["SITE_URL"], 
+        #                                                              st.secrets["USERNAME"], 
+        #                                                              st.secrets["PASSWORD"], 
+        #                                                              st.secrets["FOLDER_URL"])
             
         parte_superior()
         
