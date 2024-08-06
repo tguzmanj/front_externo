@@ -2,3 +2,5 @@ streamlit==1.36.0
 Pillow==9.4.0
 streamlit-authenticator==0.3.2
 Office365-REST-Python-Client==2.5.11
+pydrive
+pydrive2
