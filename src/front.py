@@ -21,9 +21,151 @@ from calendar import month_abbr
 
 from params import alternativas
 
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+
 # =============================================================================
 # Funciones
 # =============================================================================
+
+# Funciones de formateo de JSON ###############################################
+def lista_a_string(input):
+    if not isinstance(input, list):
+        return str(input)
+    if not input:  # Verificar si la lista está vacía
+        return ""
+    return ";".join(map(str, input))  # Convertir cada elemento a string y unir con punto y coma
+
+def rangos_a_string(input_json):
+    if not isinstance(input_json, list): # Si no es una lista
+        return input_json
+    if len(input_json)!=2: # Si la lista no tiene 2 items
+        return input_json
+    else:
+
+        if input_json[1] is None: # Si segundo item es None, no se ingresó datos
+            input_json = ''
+        elif not isinstance(input_json[0], str): # Si primer item es número, es un rango
+            input_json = f"entre {input_json[0]} y {input_json[1]}"
+        elif input_json[0] == "Mayor o igual a":
+            input_json = f">={input_json[1]}"
+        elif input_json[0] == "Menor o igual a":
+            input_json = f"<={input_json[1]}"
+        elif input_json[0] == "Mayor a":
+            input_json = f">{input_json[1]}"    
+        elif input_json[0] == "Menor a":
+            input_json = f"<{input_json[1]}"      
+        elif input_json[0] == "Igual a":
+            input_json = f"={input_json[1]}"      
+        return input_json 
+    
+def formateo_json(data):
+    """
+    Aplica las funciones foo() y foo2() solo a los valores finales de un JSON.
+
+    Esta función recorre recursivamente el JSON. Si encuentra un diccionario,
+    llama a sí misma para procesar sus valores. Si encuentra un valor final 
+    (es decir, un valor que no es ni diccionario ni lista), aplica las 
+    funciones foo() y foo2() en ese orden al valor.
+
+    Args:
+    data (dict, list, o cualquier otro tipo): El JSON o estructura anidada que contiene 
+    los valores a procesar.
+
+    Returns:
+    El JSON con las funciones foo() y foo2() aplicadas a los valores finales."""
+    if isinstance(data, dict):
+        return {key: formateo_json(value) for key, value in data.items()}
+    else:
+        # Aplica las funciones solo a los valores finales
+        return lista_a_string(rangos_a_string(data))
+
+# Funciones de conexión a Google Drive ########################################
+
+def login():
+    GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = directorio_credenciales
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile(directorio_credenciales)
+    
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth(port_numbers=[8092])
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+    else:
+        gauth.Authorize()
+        
+    gauth.SaveCredentialsFile(directorio_credenciales)
+    credenciales = GoogleDrive(gauth)
+    return credenciales
+    
+def subir_json(archivo_a_subir, nombre_de_subida, credentials):
+    """
+    Sube un archivo JSON que ya está en memoria a Google Drive
+
+    Parameters
+    ----------
+    archivo_a_subir : BytesIO
+        Archivo JSON en memoria.
+    nombre_de_subida : str
+        Qué nombre se le quiere poner al archivo subido. Debe ir con su extensión.
+        Ejemplo: 'archivo_a_subir.json'
+
+    Returns
+    -------
+    None.
+
+    """
+    # Crear un nuevo archivo en Google Drive
+    new_file = credentials.CreateFile({'title': nombre_de_subida, 'parents': [{'id': '1CJbCLgqzatVNFBsOyl2hReXdbBQFUPds'}]})
+    new_file.SetContentString(archivo_a_subir.getvalue().decode('latin-1'))
+    new_file.Upload()
+
+def cargar_correlativo_desde_google_drive(archivo_con_el_correlativo, credentials):
+    """
+    Descarga desde Google Drive un archivo con el último correlativo utilizado
+
+    Parameters
+    ----------
+    archivo_con_el_correlativo : str
+        Nombre del archivo que tiene el correlativo.
+    
+    Returns
+    -------
+    int: Número correlativo.
+
+    """
+    lista_archivos = credentials.ListFile({'q': "title = '" + archivo_con_el_correlativo + "'"}).GetList()
+    correlative_file = None
+    for file in lista_archivos:
+        print(f'Title: {file["title"]}, ID: {file["id"]}')
+        if file['title'] == archivo_con_el_correlativo:
+            correlative_file = file
+            break
+    
+    correlativo = int(correlative_file.GetContentString())
+    
+    return correlativo, correlative_file
+
+def cargar_correlativo_hacia_google_drive(archivo_con_el_correlativo, new_content):
+    """
+    Descarga desde Google Drive un archivo con el último correlativo utilizado
+
+    Parameters
+    ----------
+    archivo_con_el_correlativo : str
+        Nombre del archivo que tiene el correlativo.
+    
+    Returns
+    -------
+    int: Número correlativo.
+
+    """
+    # Reemplazar el contenido del archivo existente
+    archivo_con_el_correlativo.SetContentString(new_content)
+    archivo_con_el_correlativo.Upload()
+    print(f'Archivo {archivo_con_el_correlativo["title"]} reemplazado exitosamente.')
+    
+# Funciones de Streamlit ######################################################
 
 # Función para colapsar el expander
 def collapse_expander():
@@ -54,8 +196,8 @@ def parte_superior():
             col_cont_1, col_cont_2, col_cont_3 = st.columns(3)
             
             with col_cont_1:
-                holding = st.selectbox('Variable', [""]+alternativas['holding'], key='holding')
-                anunciante = st.selectbox('Variable', [""]+alternativas['holding'], key='anunciante')
+                holding = st.selectbox('Holding', [""]+alternativas['holding'], key='holding')
+                anunciante = st.selectbox('Anunciante', [""]+alternativas['anunciante'], key='anunciante')
                 campania = st.text_input("Campaña", key='campania')
             
             with col_cont_2:
@@ -68,7 +210,7 @@ def parte_superior():
                     month_abbr_ = month_abbr[1:]
                     report_month_str = st.radio('Mes', month_abbr_, index=this_month - 1, horizontal=True, label_visibility ='hidden')
                     report_month = month_abbr_.index(report_month_str) + 1
-                    mes_implementacion = [report_year, report_month]
+                    mes_implementacion = f"{str(report_month).zfill(2)}/{report_year}"
                     
             with col_cont_3:
                 solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None)
@@ -83,8 +225,6 @@ def parte_superior():
                     else:
                         st.warning("Por favor, rellena todos los campos obligatorios.")
                     
-                    
-
 def formatear_precio(x):
     return f'${x:,}'.replace(',', '.')
 
@@ -196,6 +336,8 @@ def cargar_correlativo_desde_sharepoint(archivo_con_el_correlativo, site_url, us
 # Parámetros
 # =============================================================================
 
+directorio_credenciales = 'src/conn/credentials_module.json'
+
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
 
@@ -204,7 +346,7 @@ half = 0.25
 logo = logo.resize( [int(half * s) for s in logo.size] )
 
 cats_f = alternativas['categorias_f']
-cats_f = [eliminar_antes_del_guion(x) for x in cats_f]
+# cats_f = [eliminar_antes_del_guion(x) for x in cats_f]
 lapso_predefinido = alternativas['lapso_predefinido']
 lapso_fijo = alternativas['lapso_fijo']
 rango_opciones = alternativas['rango_opciones']
@@ -245,10 +387,6 @@ def main():
         
         st.header("Arquetipo de Negocio")
         arq_neg_arq_neg = st.multiselect('Arquetipo de negocio', alternativas['arquetipo_de_negocio'], key='arq_neg_arq_neg')
-        
-        
-        
-        
         
         # =============================================================================
         # Parametros Ranking Transaccional
@@ -374,8 +512,8 @@ def main():
         st.header("Compras en negocios usando CMR")
         
         # Comercios ###########################################################
-        cmr_comercios = st.multiselect('Comercios a incluir', ["ADIDAS", "NIKE", "FARMACIAS AHUMADA", "SALCOBRAND"], key='cmr_comercios')
-        cmr_comercios_exclusion = st.multiselect('Comercios a excluir', ["ADIDAS", "NIKE", "FARMACIAS AHUMADA", "SALCOBRAND"], key='cmr_comercios_exclusion')
+        cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], key='cmr_comercios')
+        cmr_comercios_exclusion = st.multiselect('Comercios a excluir', alternativas['comercios'], key='cmr_comercios_exclusion')
         
         # Lapso ###############################################################
         cmr_lapso = st.selectbox('Selecciona una opción', [""]+lapso_predefinido, key='cmr_lapso')
@@ -476,8 +614,23 @@ def main():
         st.header("Características sociodemográficas")
         st.write("""Si dejas las opciones en blanco, se entiende que entran todos los clientes. Por ejemplo, si no seleccionas Sexo, tu audiencia tendrá ambos sexos""")
         sociodem_sexo = st.multiselect('Sexo', sexo, key='sociodem_sexo')
-        sociodem_edad = st.slider('Selecciona un rango de edad', 18, 100, (18, 100), key='sociodem_edad')
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_edad_1, col_sociodem_edad_2, col_sociodem_edad_3 = st.columns([2, 1, 1])
         
+        with col_sociodem_edad_1:
+            sociodem_edad_rango = st.selectbox("Rango de edad", rango_opciones, key='sociodem_edad_rango')
+
+        if sociodem_edad_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_edad_2:
+                sociodem_edad_desde = st.number_input('Edad desde', min_value=18, max_value=120, value=None, key = 'sociodem_edad_desde')
+            # Input para el precio "hasta"
+            with col_sociodem_edad_3:
+                sociodem_edad_hasta = st.number_input('Edad hasta', min_value=18, max_value=120, value=None, key = 'sociodem_edad_hasta')
+        else:
+            with col_sociodem_edad_2:
+                sociodem_edad_desde = st.number_input('Edad', min_value=18, max_value=120, value=None, key = 'sociodem_edad_desde')
+                
         sociodem_gse = st.multiselect('GSE', gse, key='sociodem_gse')
         sociodem_marital_status = st.multiselect('Estado civil', marital_status, key='sociodem_marital_status')
         sociodem_education_level = st.multiselect('Nivel de estudios', educational_level, key='sociodem_education_level')
@@ -488,7 +641,7 @@ def main():
     # Columna 5: Selectbox
     with col5:
         # Layout para tener las entradas en la misma fila
-        col_sociodem_n_vehiculos_1, col_sociodem_n_vehiculos_2,  col_sociodem_n_vehiculos_3 = st.columns([2, 1, 1])
+        col_sociodem_n_vehiculos_1, col_sociodem_n_vehiculos_2, col_sociodem_n_vehiculos_3 = st.columns([2, 1, 1])
         
         with col_sociodem_n_vehiculos_1:
             sociodem_n_vehiculos_rango = st.selectbox("Filtro de N° vehículos", rango_opciones, key='sociodem_n_vehiculos_rango')
@@ -549,6 +702,11 @@ def main():
     # Mostrar los valores seleccionados
     if submit_button:
         
+        credenciales = login()
+        
+        # Carga el último correlativo
+        st.session_state.correlativo, archivo_correlativo = cargar_correlativo_desde_google_drive('ultimo_correlativo_usado.txt', credenciales)
+        
         # Load data from JSON file
         with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
@@ -565,7 +723,8 @@ def main():
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
         json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "-")
+        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
+        json_output["1_info_general"]["tipo_audiencia"] = ''
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
         json_output["2_info_lifestyle"]["objetivo"] = lifestyle_objetivo
@@ -591,7 +750,10 @@ def main():
             json_output["5_info_arquetipo_compra"]["precio"] = [arq_compra_precio_rango, arq_compra_precio_desde]
 
         json_output["7_info_sociodemografica"]["cust_gender"] = sociodem_sexo
-        json_output["7_info_sociodemografica"]["cust_age"] = sociodem_edad
+        if sociodem_edad_rango == "Rango":
+            json_output["7_info_sociodemografica"]["cust_age"] = [sociodem_edad_desde, sociodem_edad_hasta]
+        else:
+            json_output["7_info_sociodemografica"]["cust_age"] = [sociodem_edad_rango, sociodem_edad_desde]
         json_output["7_info_sociodemografica"]["cust_gse"] = sociodem_gse
         json_output["7_info_sociodemografica"]["cust_education_level"] = sociodem_education_level
         json_output["7_info_sociodemografica"]["cust_marital_status"] = sociodem_marital_status
@@ -628,7 +790,7 @@ def main():
   
         json_output["9_ranking_transaccional"]["unidad_de_negocio"] = rnk_trx_bu
         json_output["9_ranking_transaccional"]["variable_trx"] = rnk_trx_kpi
-        json_output["9_ranking_transaccional"]["n_mejores_clientes"] = rnk_trx_top_customers
+        json_output["9_ranking_transaccional"]["n_mejores_clientes"] = '' if rnk_trx_top_customers is None else rnk_trx_top_customers
         json_output["9_ranking_transaccional"]["canal_compra"] = rnk_trx_canal_compra
      
         json_output["10_loyalty"]["lapso"] = lyty_lapso
@@ -643,10 +805,20 @@ def main():
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = sf_seguros
                 
+        # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
+        json_output_formated = formateo_json(json_output)
+
         # Convertir el diccionario a JSON
-        datos_json = json.dumps(json_output, indent=4).encode('utf-8')
+        datos_json = json.dumps(json_output_formated, 
+                                indent=4, # Para que tenga identación de JSON
+                                ensure_ascii=False
+                                ).encode('latin-1')
+                
         file_content = io.BytesIO(datos_json)
-    
+        
+        # Subir el JSON a la carpeta online
+        subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
+
         # cargar_archivo_a_sharepoint(file_content.getvalue(), 
         #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
         #                             st.secrets["SITE_URL"], 
@@ -654,8 +826,9 @@ def main():
         #                             st.secrets["PASSWORD"], 
         #                             st.secrets["FOLDER_URL"])
         
-        st.write(json_output)
-
+        # Actualiza el archivo de correlativos con el último correlativo usado
+        cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
+        
         # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
         #                             'ultimo_correlativo_usado.txt', 
         #                             st.secrets["SITE_URL"], 
@@ -663,7 +836,7 @@ def main():
         #                             st.secrets["PASSWORD"], 
         #                             st.secrets["FOLDER_URL"])
 
-
+        st.write(json_output_formated)
 
 # =============================================================================
 # Autenticación
@@ -698,15 +871,6 @@ if __name__ == "__main__":
     
     if st.session_state["authentication_status"]:
         
-        # # Inicializar el contador de ID
-        # if 'correlativo' not in st.session_state:
-        #     # Cargar último correlativo utilizado
-        #     st.session_state.correlativo = cargar_correlativo_desde_sharepoint('ultimo_correlativo_usado.txt', 
-        #                                                              st.secrets["SITE_URL"], 
-        #                                                              st.secrets["USERNAME"], 
-        #                                                              st.secrets["PASSWORD"], 
-        #                                                              st.secrets["FOLDER_URL"])
-            
         parte_superior()
         
         if st.session_state.siguiente:
