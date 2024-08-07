@@ -18,7 +18,7 @@ from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.files.file import File
 
 from calendar import month_abbr
-from dateutil import tz
+import pytz
 
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
@@ -369,7 +369,7 @@ credentials_json = st.secrets["GOOGLE_DRIVE"]["GOOGLE_APPLICATION_CREDENTIALS_JS
 # Convertir el JSON a un diccionario
 credentials_dict = json.loads(credentials_json)
 
-santiago_tz = tz.gettz("America/Santiago")
+santiago_tz = pytz.timezone('America/Santiago')
 directorio_credenciales = 'src/conn/credentials_module.json'
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
