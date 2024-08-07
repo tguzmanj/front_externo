@@ -18,6 +18,8 @@ from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.files.file import File
 
 from calendar import month_abbr
+from dateutil import tz
+
 
 from params import alternativas
 
@@ -336,8 +338,8 @@ def cargar_correlativo_desde_sharepoint(archivo_con_el_correlativo, site_url, us
 # Parámetros
 # =============================================================================
 
+santiago_tz = tz.gettz("America/Santiago")
 directorio_credenciales = 'src/conn/credentials_module.json'
-
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
 
@@ -723,7 +725,7 @@ def main():
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
         json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now().strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
+        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
         json_output["1_info_general"]["tipo_audiencia"] = ''
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
