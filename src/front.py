@@ -20,11 +20,11 @@ from office365.sharepoint.files.file import File
 from calendar import month_abbr
 from dateutil import tz
 
-
-from params import alternativas
-
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
+from oauth2client.service_account import ServiceAccountCredentials
+
+from params import alternativas
 
 # =============================================================================
 # Funciones
@@ -84,22 +84,34 @@ def formateo_json(data):
 
 # Funciones de conexión a Google Drive ########################################
 
-def login():
-    GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = directorio_credenciales
-    gauth = GoogleAuth()
-    gauth.LoadCredentialsFile(directorio_credenciales)
+# def login():
+#     GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = directorio_credenciales
+#     gauth = GoogleAuth()
+#     gauth.LoadCredentialsFile(directorio_credenciales)
     
-    if gauth.credentials is None:
-        gauth.LocalWebserverAuth(port_numbers=[8092])
-    elif gauth.access_token_expired:
-        gauth.Refresh()
-    else:
-        gauth.Authorize()
+#     if gauth.credentials is None:
+#         gauth.LocalWebserverAuth(port_numbers=[8092])
+#     elif gauth.access_token_expired:
+#         gauth.Refresh()
+#     else:
+#         gauth.Authorize()
         
-    gauth.SaveCredentialsFile(directorio_credenciales)
+#     gauth.SaveCredentialsFile(directorio_credenciales)
+#     credenciales = GoogleDrive(gauth)
+#     return credenciales
+ 
+def login():
+    # Crear una instancia de GoogleAuth
+    gauth = GoogleAuth()
+    
+    # Configurar las credenciales del servicio
+    scope = ['https://www.googleapis.com/auth/drive']
+    gauth.credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+    
+    # Crear una instancia de GoogleDrive
     credenciales = GoogleDrive(gauth)
     return credenciales
-    
+   
 def subir_json(archivo_a_subir, nombre_de_subida, credentials):
     """
     Sube un archivo JSON que ya está en memoria a Google Drive
@@ -236,6 +248,19 @@ def eliminar_antes_del_guion(texto):
     # Retornamos la segunda parte, que es lo que está después del guion
     return partes[1] if len(partes) > 1 else texto
 
+def tipo_de_audiencia(json_requerimiento):
+    
+    # Si el requerimiento pedido tiene algo de CMR, entonces es Deluxe
+    if not all(value == '' for value in json_requerimiento['8_info_cmr'].values()):
+        return 'deluxe'
+    # Si tiene marca, es Custom
+    if (json_requerimiento["3_info_cross"]["marcas"] == '') & (json_requerimiento["5_info_arquetipo_compra"]["marcas"] == ''):
+        return 'standard'
+    else:
+        return 'custom'
+
+# Funciones de conexión a Sharepoint ##########################################
+
 def cargar_archivo_a_sharepoint(archivo_a_subir, nombre_de_subida, site_url, username, password, folder_url):
     """
     Sube un archivo a una carpeta de SharePoint
@@ -337,6 +362,12 @@ def cargar_correlativo_desde_sharepoint(archivo_con_el_correlativo, site_url, us
 # =============================================================================
 # Parámetros
 # =============================================================================
+
+# Leer las credenciales desde secrets
+credentials_json = st.secrets["GOOGLE_DRIVE"]["GOOGLE_APPLICATION_CREDENTIALS_JSON"]
+
+# Convertir el JSON a un diccionario
+credentials_dict = json.loads(credentials_json)
 
 santiago_tz = tz.gettz("America/Santiago")
 directorio_credenciales = 'src/conn/credentials_module.json'
@@ -704,11 +735,14 @@ def main():
     # Mostrar los valores seleccionados
     if submit_button:
         
-        credenciales = login()
-        
-        # Carga el último correlativo
-        st.session_state.correlativo, archivo_correlativo = cargar_correlativo_desde_google_drive('ultimo_correlativo_usado.txt', credenciales)
-        
+        # No aumentar correlativo cuando sea una prueba
+        if campania != 'prueba': # Si la ejecución no es una prueba
+            credenciales = login()
+            # Carga el último correlativo
+            st.session_state.correlativo, archivo_correlativo = cargar_correlativo_desde_google_drive('ultimo_correlativo_usado.txt', credenciales)
+        else:
+            st.session_state.correlativo = 99900
+            
         # Load data from JSON file
         with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
@@ -720,13 +754,12 @@ def main():
         json_output["1_info_general"]["agencia"] = ''
         json_output["1_info_general"]["anunciante"] = anunciante
         json_output["1_info_general"]["comentario"] = ''
-        json_output["1_info_general"]["solicitada_cliente"] = solicitada_cliente
+        json_output["1_info_general"]["solicitada_cliente"] = '' if solicitada_cliente is None else solicitada_cliente
         json_output["1_info_general"]["descripcion"] = descripcion
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
         json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
-        json_output["1_info_general"]["tipo_audiencia"] = ''
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
         json_output["2_info_lifestyle"]["objetivo"] = lifestyle_objetivo
@@ -809,7 +842,10 @@ def main():
                 
         # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
         json_output_formated = formateo_json(json_output)
-
+        
+        # Agrega el tipo de audiencia
+        json_output_formated["1_info_general"]["tipo_audiencia"] = tipo_de_audiencia(json_output_formated)
+        
         # Convertir el diccionario a JSON
         datos_json = json.dumps(json_output_formated, 
                                 indent=4, # Para que tenga identación de JSON
@@ -818,8 +854,9 @@ def main():
                 
         file_content = io.BytesIO(datos_json)
         
-        # Subir el JSON a la carpeta online
-        subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
+        if campania != 'prueba':
+            # Subir el JSON a la carpeta online
+            subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
 
         # cargar_archivo_a_sharepoint(file_content.getvalue(), 
         #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
@@ -828,9 +865,10 @@ def main():
         #                             st.secrets["PASSWORD"], 
         #                             st.secrets["FOLDER_URL"])
         
-        # Actualiza el archivo de correlativos con el último correlativo usado
-        cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
-        
+        if campania != 'prueba':
+            # Actualiza el archivo de correlativos con el último correlativo usado
+            cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
+            
         # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
         #                             'ultimo_correlativo_usado.txt', 
         #                             st.secrets["SITE_URL"], 
