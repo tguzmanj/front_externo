@@ -183,11 +183,6 @@ def cargar_correlativo_hacia_google_drive(archivo_con_el_correlativo, new_conten
     
 # Funciones de Streamlit ######################################################
 
-def dummy():
-    return stDatalist(label='Anunciante', options=[""]+alternativas['anunciante'], key='anunciante')
-    
-
-
 # Función para colapsar el expander
 def collapse_expander():
     st.session_state.expander_open = False
@@ -217,8 +212,8 @@ def parte_superior():
             col_cont_1, col_cont_2, col_cont_3 = st.columns(3)
             
             with col_cont_1:
-                holding = st.selectbox('Holding', [""]+alternativas['holding'], key='holding')
-                anunciante = dummy()
+                holding = st.selectbox('Holding', [""]+holding_list, key='holding')
+                anunciante = stDatalist(label='Anunciante', options=[""]+anunciante_list, key='anunciante')
                 campania = st.text_input("Campaña", key='campania')
             
             with col_cont_2:
@@ -384,6 +379,9 @@ logo = logo.resize( [int(half * s) for s in logo.size] )
 
 cats_f = alternativas['categorias_f']
 # cats_f = [eliminar_antes_del_guion(x) for x in cats_f]
+holding_list = alternativas['holding']
+anunciante_list = alternativas['anunciante']
+anunciante_list.sort()
 lapso_predefinido = alternativas['lapso_predefinido']
 lapso_fijo = alternativas['lapso_fijo']
 rango_opciones = alternativas['rango_opciones']
@@ -762,7 +760,7 @@ def main():
         json_output["1_info_general"]["descripcion"] = descripcion
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
-        json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now(tz=santiago_tz).strftime('%Y-%m-%d %H:%M:%S')
         json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles

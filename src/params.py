@@ -13,8 +13,8 @@ comercios = pd.read_csv('data/raw/comercios.csv', header=0, index_col =False, se
 anunciante = pd.read_csv('data/raw/anunciante.csv', header=0, index_col =False, sep=',', decimal='.', on_bad_lines='skip')
 
 alternativas = {'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS", "Sin holding"],
-                'lapso_predefinido':['3 meses', '6 meses', '12 meses', 'Crear mi propio rango'],
-                'lapso_fijo':['3 meses', '6 meses', '12 meses'],
+                'lapso_predefinido':['3 meses', '6 meses', '12 meses', '24 meses', "36 meses", 'Crear mi propio rango'],
+                'lapso_fijo':['3 meses', '6 meses', '12 meses', '24 meses', "36 meses"],
                 'rango_opciones':["Mayor o igual a", "Menor o igual a", "Mayor a", "Menor a", "Igual a", "Rango"],
                 'marcas': [*marcas['marcas']],
                 'comercios': [*comercios['comercios']],
