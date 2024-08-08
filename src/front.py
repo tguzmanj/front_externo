@@ -17,6 +17,8 @@ from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.files.file import File
 
+from streamlit_datalist import stDatalist
+
 from calendar import month_abbr
 import pytz
 
@@ -181,6 +183,11 @@ def cargar_correlativo_hacia_google_drive(archivo_con_el_correlativo, new_conten
     
 # Funciones de Streamlit ######################################################
 
+def dummy():
+    return stDatalist(label='Anunciante', options=[""]+alternativas['anunciante'], key='anunciante')
+    
+
+
 # Función para colapsar el expander
 def collapse_expander():
     st.session_state.expander_open = False
@@ -211,7 +218,7 @@ def parte_superior():
             
             with col_cont_1:
                 holding = st.selectbox('Holding', [""]+alternativas['holding'], key='holding')
-                anunciante = st.selectbox('Anunciante', [""]+alternativas['anunciante'], key='anunciante')
+                anunciante = dummy()
                 campania = st.text_input("Campaña", key='campania')
             
             with col_cont_2:
@@ -230,12 +237,9 @@ def parte_superior():
                 solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None)
                 descripcion = st.text_input("Breve descripción de la audiencia a solicitar", key = 'descripcion')
                 # Botón de avanzar
-                if st.button("Siguiente"):
+                if st.button("Siguiente", on_click=collapse_expander):
                     if holding and anunciante: # Verificar que campos obligatorios hayan sido rellenados
-                        # Aquí puedes manejar la lógica de envío de datos
-                        collapse_expander()  # Colapsar el expander
                         st.session_state.siguiente = True
-                        st.rerun()
                     else:
                         st.warning("Por favor, rellena todos los campos obligatorios.")
                     
@@ -902,6 +906,14 @@ authenticator = stauth.Authenticate(
 if __name__ == "__main__":
     
     authenticator.login()
+    
+    # Esta parte es para que aparezca el botón de "anunciante", ya que no aparece de inmediato
+    if 'rerun' not in st.session_state:
+        st.session_state.rerun = True
+    if st.session_state.rerun == True:    
+        st.session_state.rerun = False
+        st.rerun() 
+        
     if 'siguiente' not in st.session_state:
         st.session_state.siguiente = False
     
