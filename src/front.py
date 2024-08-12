@@ -183,6 +183,50 @@ def cargar_correlativo_hacia_google_drive(archivo_con_el_correlativo, new_conten
     
 # Funciones de Streamlit ######################################################
 
+def clear_all():
+    """
+    Limpia las alternativas seleccionadas, manteniendo las de arriba
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    # Para cada session_state
+    for i in st.session_state:
+        # Que sea una selección
+        if i not in ['siguiente',
+                    'authentication_status',
+                    'username',
+                    'logout',
+                    'rerun',
+                    'FormSubmitter:my_form-Enviar',
+                    'FormSubmitter:my_form-Limpiar alternativas',
+                    'expander_open',
+                    'init',
+                    '_xsrf',
+                    'name_cookie',
+                    'name', 'correlativo', 
+                    'holding', 'anunciante', 'campania', 'solicitada_cliente', 'descripcion']: # No limpiar lo de arriba
+            
+            # Inicializarla dependiendo de qué es
+            if type(st.session_state[i]) is list: # Para multiselect
+                st.session_state[i] = []
+            elif  type(st.session_state[i]) is int: # Para number_input   
+                st.session_state[i] = None
+            elif  type(st.session_state[i]) is str: # Para selectbox 
+                st.session_state[i] = ''
+            else:
+                pass # debugging
+                # print(i)
+                # print(st.session_state[i])
+                # print(type(st.session_state[i]))
+        # Siempre que se limpien las opciones, abrir el expander para que se pueda modificar
+        if i == 'expander_open': 
+            print("soy extpander")
+            st.session_state[i] = True
+    
 # Función para colapsar el expander
 def collapse_expander():
     st.session_state.expander_open = False
@@ -229,7 +273,7 @@ def parte_superior():
                     mes_implementacion = f"{str(report_month).zfill(2)}/{report_year}"
                     
             with col_cont_3:
-                solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None)
+                solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None, key='solicitada_cliente')
                 descripcion = st.text_input("Breve descripción de la audiencia a solicitar", key = 'descripcion')
                 # Botón de avanzar
                 if st.button("Siguiente", on_click=collapse_expander):
@@ -401,6 +445,8 @@ sf_seguros = alternativas['sf_seguros']
 
 def main():
     
+    st.button("Limpiar alternativas seleccionadas", on_click=clear_all)
+
     # Crear las 5 columnas
     col1, col2, col3, col4, col5 = st.columns(5)
     
@@ -879,6 +925,7 @@ def main():
         #                             st.secrets["FOLDER_URL"])
 
         st.write(json_output_formated)
+
 
 # =============================================================================
 # Autenticación
