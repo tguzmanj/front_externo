@@ -34,7 +34,9 @@ from params import alternativas
 
 # Funciones de formateo de JSON ###############################################
 def lista_a_string(input):
-    if not isinstance(input, list):
+    if not isinstance(input, list): # Si no es una lista
+        if input is None: # A los None los deja como un string vacío
+            return ""
         return str(input)
     if not input:  # Verificar si la lista está vacía
         return ""
