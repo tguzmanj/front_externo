@@ -86,22 +86,6 @@ def formateo_json(data):
 
 # Funciones de conexión a Google Drive ########################################
 
-# def login():
-#     GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = directorio_credenciales
-#     gauth = GoogleAuth()
-#     gauth.LoadCredentialsFile(directorio_credenciales)
-    
-#     if gauth.credentials is None:
-#         gauth.LocalWebserverAuth(port_numbers=[8092])
-#     elif gauth.access_token_expired:
-#         gauth.Refresh()
-#     else:
-#         gauth.Authorize()
-        
-#     gauth.SaveCredentialsFile(directorio_credenciales)
-#     credenciales = GoogleDrive(gauth)
-#     return credenciales
- 
 def login():
     # Crear una instancia de GoogleAuth
     gauth = GoogleAuth()
@@ -458,26 +442,32 @@ def main():
         # Parametros Lifestyle
         # =============================================================================
         
-        st.header("Lifestyles")
-        lifestyle_lifestyles = st.multiselect('Lifestyles', alternativas['lifestyles'], key='lifestyle_lifestyles')
-        lifestyle_objetivo = st.selectbox('Variable', [""]+alternativas['lifestyle_objetivo'], key='lifestyle_objetivo')
+        st.header("Lifestyle")
+        lifestyle_lifestyles = st.multiselect('Lifestyles', alternativas['lifestyles'], placeholder = 'Selecciona un lifestyle', key='lifestyle_lifestyles',
+                                              help='Corresponde a caracterizaciones de clientes del holding de acuerdo a su transaccionalidad en los últimos 12 meses.')
+        lifestyle_objetivo = st.selectbox('Objetivo de la campaña', alternativas['lifestyle_objetivo'], index=None, placeholder = "Selecciona un objetivo", key='lifestyle_objetivo',
+                                          help='Ayuda a determinar el tipo de audiencia del lifestyle en base al objetivo de la campaña.')
         
         # =============================================================================
         # Parametros Arquetipo de Negocio
         # =============================================================================
         
         st.header("Arquetipo de Negocio")
-        arq_neg_arq_neg = st.multiselect('Arquetipo de negocio', alternativas['arquetipo_de_negocio'], key='arq_neg_arq_neg')
+        arq_neg_arq_neg = st.multiselect('Arquetipo de negocio', alternativas['arquetipo_de_negocio'], placeholder = 'Selecciona un arquetipo de negocio', key='arq_neg_arq_neg',
+                                         help='Se define a partir del comportamiento de compra (frecuencia y/o gasto) para cada unidad de negocio.')
         
         # =============================================================================
         # Parametros Ranking Transaccional
         # =============================================================================
         
         st.header("Ranking de transacciones")
-        rnk_trx_bu = st.selectbox('Unidad de negocio', ["", "Falabella", "Sodimac", "Tottus"], key='rnk_trx_bu')
-        rnk_trx_kpi = st.selectbox('Variable', ["", "Frecuencia", "Gasto"], key='rnk_trx_kpi')
-        rnk_trx_top_customers = st.number_input("Mejores clientes", value=None, min_value=0, placeholder="Ingresa un número mayor a 0", key='rnk_trx_top_customers')
-        rnk_trx_canal_compra = st.selectbox('Canal de compra', ["", "Solo online", "Solo offline"], key='rnk_trx_canal_compra')
+        rnk_trx_bu = st.selectbox('Unidad de negocio', ["Falabella", "Sodimac", "Tottus"], index=None, placeholder = "Selecciona una unidad de negocio", key='rnk_trx_bu')
+        rnk_trx_kpi = st.selectbox('KPI', ["Frecuencia", "Gasto"], index=None, placeholder = "Selecciona un KPI", key='rnk_trx_kpi',
+                                   help='Puede ser frecuencia de compra (cada cuánto tiempo compra en la unidad de negocio) o gasto (cuánto dinero ha gastado en la unidad de negocio), siempre considerando los últimos 12 meses.')
+        rnk_trx_top_customers = st.number_input("Mejores clientes", value=None, min_value=0, placeholder="Ingresa un número mayor a 0", key='rnk_trx_top_customers',
+                                                help = "Considerará a los mejores X clientes a la hora de obtener la audiencia. Por ejemplo, los top 5000 clientes de mayor gasto en Sodimac.")
+        rnk_trx_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, key='rnk_trx_canal_compra',
+                                            help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
 
         # =============================================================================
         # Parametros Seguros
@@ -486,7 +476,8 @@ def main():
         st.header("Seguros Falabella")
         
         # Lapso ###############################################################
-        sf_lapso = st.selectbox('Selecciona una opción', [""]+lapso_predefinido, key='sf_lapso')
+        sf_lapso = st.selectbox('Tipo de seguro', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
+                                help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
         if sf_lapso == 'Crear mi propio rango':
             sf_lapso_perso = st.date_input(
                 'Selecciona un rango de fechas', 
@@ -495,7 +486,7 @@ def main():
         else:
             sf_lapso_perso = None
         
-        sf_seguros = st.multiselect('Seguros contratados', alternativas['sf_seguros'], key='sf_seguros')
+        sf_seguros = st.multiselect('Tipo de seguro', alternativas['sf_seguros'], placeholder = "Selecciona un seguro", key='sf_seguros')
         
     # Columna 2: 4 selectbox y 4 multiselect
     with col2:
@@ -507,10 +498,12 @@ def main():
         st.header("Compras en categorías de productos")
 
         # Categorías F ########################################################
-        cross_cat_f = st.multiselect('Selecciona opciones', cats_f, key='cross_cat_f')
+        cross_cat_f = st.multiselect('Categorías de productos', cats_f, placeholder = 'Selecciona categorías', key='cross_cat_f', 
+                                     help='Cada categoría puede considerar productos de Falabella, Sodimac y Tottus, cuando corresponda.')
         
         # Lapso ###############################################################
-        cross_lapso = st.selectbox('Selecciona una opción', [""]+lapso_predefinido, key='cross_lapso')
+        cross_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cross_lapso',
+                                   help='Corresponde al periodo de tiempo que se considerará en la compra de algún producto dentro de la categoría seleccionada.')
         if cross_lapso == 'Crear mi propio rango':
             cross_lapso_perso = st.date_input(
                 'Selecciona un rango de fechas', 
@@ -520,14 +513,16 @@ def main():
             cross_lapso_perso = None
         
         # Marca ###############################################################
-        cross_brands = st.multiselect('Selecciona opciones', brands, key='cross_brands')
+        cross_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='cross_brands',
+                                      help='Define qué marcas de productos deben haber sido compradas para ser considerado dentro de la audiencia.')
         
         # Precio ##############################################################
         # Layout para tener las entradas en la misma fila
         col_cross_1, col_cross_2,  col_cross_3 = st.columns([2, 1, 1])
         
         with col_cross_1:
-            cross_precio_rango = st.selectbox("Filtro de precios", rango_opciones, key='cross_precio_rango')
+            cross_precio_rango = st.selectbox("Filtro de precios", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='cross_precio_rango',
+                                              help='Define el rango de precios que deben tener los productos comprados dentro de la categoría seleccionada.')
 
         if cross_precio_rango == "Rango":
             # Input para el precio "desde"
@@ -541,19 +536,23 @@ def main():
                 cross_precio_desde = st.number_input("Precio", value=None, key='cross_precio_desde')
     
         # Canal de compra #####################################################
-        cross_canal_compra = st.selectbox('Canal de compra', ["", "Solo online", "Solo offline"], key='cross_canal_compra')
+        cross_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, placeholder = 'Selecciona un canal de compra', key='cross_canal_compra',
+                                          help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
         
         # =============================================================================
         # Parametros Arquetipo de Compra
         # =============================================================================
         
         st.header("Arquetipo de Compra")
-        arq_compra_arq_compra = st.selectbox('Variable', [""]+arquetipo_de_compra, key='arquetipo_de_compra')
+        arq_compra_arq_compra = st.selectbox('Arquetipo de compra', arquetipo_de_compra, index=None, placeholder = "Selecciona un arquetipo", key='arquetipo_de_compra',
+                                             help="""Se conforma de niveles de lealtad hacia una determinada categoría.\n- Fieles: Clientes donde más del 90% de las unidades compradas dentro de la categoría perteneces a una marca (i.e., típicamente compran esa marca dentro de la categoría)\n- Mix: Clientes que no son fieles (i.e., no tienen una marca favorita, cambian de marca dentro de la categoría)\n- Fugados: Clientes que compraban en la categoría en los últimos 6 meses, pero en los últimos 3 meses no lo han hecho""")
         # Categorías F ########################################################
-        arq_compra_cat_f = st.multiselect('Selecciona opciones', cats_f, key='arq_compra_cat_f')
+        arq_compra_cat_f = st.multiselect('Categorías de productos', cats_f, placeholder = 'Selecciona categorías', key='arq_compra_cat_f',
+                                          help='Cada categoría puede considerar productos de Falabella, Sodimac y Tottus, cuando corresponda.')
 
         # Lapso ###############################################################
-        arq_compra_lapso = st.selectbox('Selecciona una opción', [""]+lapso_predefinido, key='arq_compra_lapso')
+        arq_compra_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='arq_compra_lapso',
+                                        help='Corresponde al periodo de tiempo que se considerará en la compra de algún producto dentro de la categoría seleccionada.')
         if arq_compra_lapso == 'Crear mi propio rango':
             arq_compra_lapso_perso = st.date_input(
                 'Selecciona un rango de fechas', 
@@ -563,14 +562,16 @@ def main():
             arq_compra_lapso_perso = None
         
         # Marca ###############################################################
-        arq_compra_brands = st.multiselect('Selecciona opciones', brands, key='arq_compra_brands')
+        arq_compra_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='arq_compra_brands',
+                                           help='De qué marca estamos hablando en la definición del arquetipo.')
         
         # Precio ##############################################################
         # Layout para tener las entradas en la misma fila
         col_arq_compra_1, col_arq_compra_2,  col_arq_compra_3 = st.columns([2, 1, 1])
         
         with col_arq_compra_1:
-            arq_compra_precio_rango = st.selectbox("Filtro de precios", rango_opciones, key='arq_compra_precio_rango')
+            arq_compra_precio_rango = st.selectbox("Filtro de precios", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='arq_compra_precio_rango',
+                                                   help='Define el rango de precios que deben tener los productos comprados dentro de la categoría seleccionada.')
 
         if arq_compra_precio_rango == "Rango":
             # Input para el precio "desde"
