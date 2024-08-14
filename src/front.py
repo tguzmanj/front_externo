@@ -204,7 +204,7 @@ def clear_all():
             elif type(st.session_state[i]) is int: # Para number_input   
                 st.session_state[i] = None
             elif type(st.session_state[i]) is str: # Para selectbox 
-                st.session_state[i] = ''
+                st.session_state[i] = None
             elif type(st.session_state[i]) is bool: # Para checkbox 
                 st.session_state[i] = False
             else:
@@ -449,7 +449,7 @@ def main():
         # =============================================================================
         
         st.header("Lifestyle")
-        lifestyle_lifestyles = st.multiselect('Lifestyles', alternativas['lifestyles'], placeholder = 'Selecciona un lifestyle', key='lifestyle_lifestyles',
+        lifestyle_lifestyles = st.multiselect('Lifestyle', alternativas['lifestyles'], placeholder = 'Selecciona lifestyles', key='lifestyle_lifestyles',
                                               help='Corresponde a caracterizaciones de clientes del holding de acuerdo a su transaccionalidad en los últimos 12 meses.')
         lifestyle_objetivo = st.selectbox('Objetivo de la campaña', alternativas['lifestyle_objetivo'], index=None, placeholder = "Selecciona un objetivo", key='lifestyle_objetivo',
                                           help='Ayuda a determinar el tipo de audiencia del lifestyle en base al objetivo de la campaña.')
@@ -472,7 +472,7 @@ def main():
                                    help='Puede ser frecuencia de compra (cada cuánto tiempo compra en la unidad de negocio) o gasto (cuánto dinero ha gastado en la unidad de negocio), siempre considerando los últimos 12 meses.')
         rnk_trx_top_customers = st.number_input("Mejores clientes", value=None, min_value=0, placeholder="Ingresa un número mayor a 0", key='rnk_trx_top_customers',
                                                 help = "Considerará a los mejores X clientes a la hora de obtener la audiencia. Por ejemplo, los top 5000 clientes de mayor gasto en Sodimac.")
-        rnk_trx_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, key='rnk_trx_canal_compra',
+        rnk_trx_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, placeholder = 'Selecciona un canal de compra', key='rnk_trx_canal_compra',
                                             help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
 
         # =============================================================================
@@ -484,15 +484,15 @@ def main():
         # Lapso ###############################################################
         sf_lapso = st.selectbox('Tipo de seguro', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
                                 help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
-        if sf_lapso == 'Crear mi propio rango':
-            sf_lapso_perso = st.date_input(
-                'Selecciona un rango de fechas', 
-                value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-                key='sf_lapso_perso')
-        else:
-            sf_lapso_perso = None
+        # if sf_lapso == 'Crear mi propio rango':
+        #     sf_lapso_perso = st.date_input(
+        #         'Selecciona un rango de fechas', 
+        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         key='sf_lapso_perso')
+        # else:
+        #     sf_lapso_perso = None
         
-        sf_seguros = st.multiselect('Tipo de seguro', alternativas['sf_seguros'], placeholder = "Selecciona un seguro", key='sf_seguros')
+        sf_seguros = st.multiselect('Tipo de seguro', alternativas['sf_seguros'], placeholder = "Selecciona seguros", key='sf_seguros')
         
     # Columna 2: 4 selectbox y 4 multiselect
     with col2:
@@ -510,13 +510,13 @@ def main():
         # Lapso ###############################################################
         cross_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cross_lapso',
                                    help='Corresponde al periodo de tiempo que se considerará en la compra de algún producto dentro de la categoría seleccionada.')
-        if cross_lapso == 'Crear mi propio rango':
-            cross_lapso_perso = st.date_input(
-                'Selecciona un rango de fechas', 
-                value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-                key='cross_lapso_perso')
-        else:
-            cross_lapso_perso = None
+        # if cross_lapso == 'Crear mi propio rango':
+        #     cross_lapso_perso = st.date_input(
+        #         'Selecciona un rango de fechas', 
+        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         key='cross_lapso_perso')
+        # else:
+        #     cross_lapso_perso = None
         
         # Marca ###############################################################
         cross_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='cross_brands',
@@ -527,19 +527,22 @@ def main():
         col_cross_1, col_cross_2,  col_cross_3 = st.columns([2, 1, 1])
         
         with col_cross_1:
-            cross_precio_rango = st.selectbox("Filtro de precios", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='cross_precio_rango',
+            cross_precio_rango = st.selectbox("Filtro de precios (en $)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='cross_precio_rango',
                                               help='Define el rango de precios que deben tener los productos comprados dentro de la categoría seleccionada.')
 
         if cross_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_cross_2:
-                cross_precio_desde = st.number_input("Precio desde", value=None, key='cross_precio_desde')
+                cross_precio_desde = st.number_input("Precio desde", value=None, key='cross_precio_desde',
+                                                     help='En $, por ejemplo: 9990')
             # Input para el precio "hasta"
             with col_cross_3:
-                cross_precio_hasta = st.number_input("Precio hasta", value=None, key='cross_precio_hasta')
+                cross_precio_hasta = st.number_input("Precio hasta", value=None, key='cross_precio_hasta',
+                                                     help='En $, por ejemplo: 59990')
         else:
             with col_cross_2:
-                cross_precio_desde = st.number_input("Precio", value=None, key='cross_precio_desde')
+                cross_precio_desde = st.number_input("Precio", value=None, key='cross_precio_desde',
+                                                     help='En $, por ejemplo: 9990')
     
         # Canal de compra #####################################################
         cross_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, placeholder = 'Selecciona un canal de compra', key='cross_canal_compra',
@@ -552,6 +555,19 @@ def main():
         st.header("Arquetipo de Compra")
         arq_compra_arq_compra = st.selectbox('Arquetipo de compra', arquetipo_de_compra, index=None, placeholder = "Selecciona un arquetipo", key='arquetipo_de_compra',
                                              help="""Se conforma de niveles de lealtad hacia una determinada categoría.\n- Fieles: Clientes donde más del 90% de las unidades compradas dentro de la categoría perteneces a una marca (i.e., típicamente compran esa marca dentro de la categoría)\n- Mix: Clientes que no son fieles (i.e., no tienen una marca favorita, cambian de marca dentro de la categoría)\n- Fugados: Clientes que compraban en la categoría en los últimos 6 meses, pero en los últimos 3 meses no lo han hecho""")
+        
+        # Marca ###############################################################
+        if arq_compra_arq_compra in ['Fieles a la marca',
+                                   'Fieles a competencia de la marca',
+                                   'Mix que incluyen a la marca',
+                                   'Mix solo entre competidores',
+                                   'Fugados de la categoría que compraban la marca',
+                                   'Fugados de la categoría que compraban solo la competencia',
+                                   'Fugados marca en categoría',
+                                   'Marca en otras categorías']:
+            arq_compra_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='arq_compra_brands',
+                                               help='De qué marca estamos hablando en la definición del arquetipo.')
+            
         # Categorías F ########################################################
         arq_compra_cat_f = st.multiselect('Categorías de productos', cats_f, placeholder = 'Selecciona categorías', key='arq_compra_cat_f',
                                           help='Cada categoría puede considerar productos de Falabella, Sodimac y Tottus, cuando corresponda.')
@@ -559,36 +575,35 @@ def main():
         # Lapso ###############################################################
         arq_compra_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='arq_compra_lapso',
                                         help='Corresponde al periodo de tiempo que se considerará en la compra de algún producto dentro de la categoría seleccionada.')
-        if arq_compra_lapso == 'Crear mi propio rango':
-            arq_compra_lapso_perso = st.date_input(
-                'Selecciona un rango de fechas', 
-                value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-                key='arq_compra_lapso_perso')
-        else:
-            arq_compra_lapso_perso = None
-        
-        # Marca ###############################################################
-        arq_compra_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='arq_compra_brands',
-                                           help='De qué marca estamos hablando en la definición del arquetipo.')
+        # if arq_compra_lapso == 'Crear mi propio rango':
+        #     arq_compra_lapso_perso = st.date_input(
+        #         'Selecciona un rango de fechas', 
+        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         key='arq_compra_lapso_perso')
+        # else:
+        #     arq_compra_lapso_perso = None
         
         # Precio ##############################################################
         # Layout para tener las entradas en la misma fila
         col_arq_compra_1, col_arq_compra_2,  col_arq_compra_3 = st.columns([2, 1, 1])
         
         with col_arq_compra_1:
-            arq_compra_precio_rango = st.selectbox("Filtro de precios", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='arq_compra_precio_rango',
+            arq_compra_precio_rango = st.selectbox("Filtro de precios (en $)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='arq_compra_precio_rango',
                                                    help='Define el rango de precios que deben tener los productos comprados dentro de la categoría seleccionada.')
 
         if arq_compra_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_arq_compra_2:
-                arq_compra_precio_desde = st.number_input('Precio desde', min_value=0, value=None, key='arq_compra_precio_desde')
+                arq_compra_precio_desde = st.number_input('Precio desde', min_value=0, value=None, key='arq_compra_precio_desde',
+                                                          help='En $, por ejemplo: 9990')
             # Input para el precio "hasta"
             with col_arq_compra_3:
-                arq_compra_precio_hasta = st.number_input('Precio hasta', min_value=0, value=None, key='arq_compra_precio_hasta')
+                arq_compra_precio_hasta = st.number_input('Precio hasta', min_value=0, value=None, key='arq_compra_precio_hasta',
+                                                          help='En $, por ejemplo: 59990')
         else:
             with col_arq_compra_2:
-                arq_compra_precio_desde = st.number_input('Precio', min_value=0, value=None, key='arq_compra_precio_desde')
+                arq_compra_precio_desde = st.number_input('Precio', min_value=0, value=None, key='arq_compra_precio_desde',
+                                                          help='En $, por ejemplo: 9990')
 
     # Columna 3: Textbox
     with col3:
@@ -600,18 +615,21 @@ def main():
         st.header("Compras en negocios usando CMR")
         
         # Comercios ###########################################################
-        cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], key='cmr_comercios')
-        cmr_comercios_exclusion = st.multiselect('Comercios a excluir', alternativas['comercios'], key='cmr_comercios_exclusion')
+        cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], placeholder = 'Selecciona comercios a incluir', key='cmr_comercios',
+                                       help='Son los comercios en los que deben haber comprado para aparecer en la audiencia.')
+        cmr_comercios_exclusion = st.multiselect('Comercios a excluir', alternativas['comercios'], placeholder = 'Selecciona comercios a excluir', key='cmr_comercios_exclusion',
+                                                 help='La audiencia resultante no tendrá transacciones realizadas en estos comercios')
         
         # Lapso ###############################################################
-        cmr_lapso = st.selectbox('Selecciona una opción', [""]+lapso_predefinido, key='cmr_lapso')
-        if cmr_lapso == 'Crear mi propio rango':
-            cmr_lapso_perso = st.date_input(
-                'Selecciona un rango de fechas', 
-                value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-                key='cmr_lapso_perso')
-        else:
-            cmr_lapso_perso = None
+        cmr_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cmr_lapso',
+                                 help='Corresponde al periodo de tiempo que se considerará en la compra dentro de los comercios seleccionados.')
+        # if cmr_lapso == 'Crear mi propio rango':
+        #     cmr_lapso_perso = st.date_input(
+        #         'Selecciona un rango de fechas', 
+        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         key='cmr_lapso_perso')
+        # else:
+        #     cmr_lapso_perso = None
         
         # Precio ##############################################################
         
@@ -619,52 +637,61 @@ def main():
         col_cmr_precio_1, col_cmr_precio_2,  col_cmr_precio_3 = st.columns([2, 1, 1])
         
         with col_cmr_precio_1:
-            cmr_precio_rango = st.selectbox("Filtro de precios", rango_opciones, key='cmr_precio_rango')
+            cmr_precio_rango = st.selectbox("Filtro precios com. a incluir", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='cmr_precio_rango',
+                                            help='Define el rango de precios que debe tener la transacción dentro de los comercios a incluir seleccionados.')
         
         if cmr_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_cmr_precio_2:
-                cmr_precio_desde = st.number_input("Precio desde", value=None, key='cmr_precio_desde')
+                cmr_precio_desde = st.number_input("Precio desde", min_value=0, value=None, key='cmr_precio_desde',
+                                                   help='En $, por ejemplo: 30000')
             # Input para el precio "hasta"
             with col_cmr_precio_3:
-                cmr_precio_hasta = st.number_input("Precio hasta", value=None, key='cmr_precio_hasta')
+                cmr_precio_hasta = st.number_input("Precio hasta", min_value=0, value=None, key='cmr_precio_hasta',
+                                                   help='En $, por ejemplo: 80000')
         else:
             with col_cmr_precio_2:
-                cmr_precio_desde = st.number_input("Precio", value=None, key='cmr_precio_desde')
+                cmr_precio_desde = st.number_input("Precio", min_value=0, value=None, key='cmr_precio_desde',
+                                                   help='En $, por ejemplo: 30000')
         
         # Layout para tener las entradas en la misma fila
         col_cmr_exclusion_1, col_cmr_exclusion_2,  col_cmr_exclusion_3 = st.columns([2, 1, 1])
         
         with col_cmr_exclusion_1:
-            cmr_precio_exclusion_rango = st.selectbox("Filtro de precios", rango_opciones, key='cmr_precio_exclusion_rango')
+            cmr_precio_exclusion_rango = st.selectbox("Filtro precios com. a excluir", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='cmr_precio_exclusion_rango',
+                                                      help='Define el rango de precios que debe tener la transacción dentro de los comercios a excluir seleccionados.')
             
         if cmr_precio_exclusion_rango == "Rango":
             # Input para el precio "desde"
             with col_cmr_exclusion_2:
-                cmr_precio_exclusion_desde = st.number_input("Precio desde", value=None, key='cmr_precio_exclusion_desde')
+                cmr_precio_exclusion_desde = st.number_input("Precio desde", min_value=0, value=None, key='cmr_precio_exclusion_desde',
+                                                             help='En $, por ejemplo: 30000')
             # Input para el precio "hasta"
             with col_cmr_exclusion_3:
-                cmr_precio_exclusion_hasta = st.number_input("Precio hasta", value=None, key='cmr_precio_exclusion_hasta')
+                cmr_precio_exclusion_hasta = st.number_input("Precio hasta", min_value=0, value=None, key='cmr_precio_exclusion_hasta',
+                                                             help='En $, por ejemplo: 80000')
         else:
             with col_cmr_exclusion_2:
-                cmr_precio_exclusion_desde = st.number_input("Precio", value=None, key='cmr_precio_exclusion_desde')
+                cmr_precio_exclusion_desde = st.number_input("Precio", min_value=0, value=None, key='cmr_precio_exclusion_desde',
+                                                             help='En $, por ejemplo: 30000')
                 
         # Tipo compra #########################################################
-        cmr_tipo_compra = st.selectbox('Tipo de compra comercios a incluir', ["", "Solo nacional", "Solo internacional"], key='cmr_tipo_compra')
-        cmr_tipo_compra_exclusion = st.selectbox('Tipo de compra comercios a excluir', ["", "Solo nacional", "Solo internacional"], key='cmr_tipo_compra_exclusion')
+        cmr_tipo_compra = st.selectbox('Tipo de compra comercios a incluir', ["Solo nacional", "Solo internacional"], index=None, placeholder = 'Selecciona un tipo de compra', key='cmr_tipo_compra',
+                                       help = 'Permite considerar solo transacciones nacionales o internacionales para los comercios a incluir.')
+        cmr_tipo_compra_exclusion = st.selectbox('Tipo de compra comercios a excluir', ["Solo nacional", "Solo internacional"], placeholder = 'Selecciona un tipo de compra', index=None, key='cmr_tipo_compra_exclusion',
+                                                 help = 'Permite considerar solo transacciones nacionales o internacionales para los comercios a excluir.')
 
         # =============================================================================
         # Parametros Loyalty
         # =============================================================================
 
         st.header("Programa de lealtad")
-        # Lapso ###############################################################
-        lyty_lapso = st.selectbox('Selecciona una opción', [""]+lapso_fijo, key='lyty_lapso')
+        
         # Acumulación y canje #########################################################
         # Layout para tener las entradas en la misma fila
         col_lyty_acumul_1, col_lyty_acumul_2,  col_lyty_acumul_3 = st.columns([2, 1, 1])
         with col_lyty_acumul_1:
-            lyty_acumul_rango = st.selectbox("Filtro de acumulación", rango_opciones, key='lyty_acumul_rango')
+            lyty_acumul_rango = st.selectbox("Filtro de acumulación", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_acumul_rango')
             
         if lyty_acumul_rango == "Rango":
             # Input para el precio "desde"
@@ -680,7 +707,7 @@ def main():
         # Layout para tener las entradas en la misma fila
         col_lyty_canje_1, col_lyty_canje_2,  col_lyty_canje_3 = st.columns([2, 1, 1])
         with col_lyty_canje_1:
-            lyty_canje_rango = st.selectbox("Filtro de canje", rango_opciones, key='lyty_canje_rango')
+            lyty_canje_rango = st.selectbox("Filtro de canje", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_canje_rango')
             
         if lyty_canje_rango == "Rango":
             # Input para el precio "desde"
@@ -692,7 +719,11 @@ def main():
         else:
             with col_lyty_canje_2:
                 lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde')
-
+        
+        # Lapso ###############################################################
+        lyty_lapso = st.selectbox('Lapso', lapso_fijo, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
+                                  help='Corresponde al periodo de tiempo que se considerará la acumulación y/o el canje')
+        
     # Columna 4: Slide input que permite poner un rango de valores
     with col4:
         # =============================================================================
@@ -701,12 +732,12 @@ def main():
         
         st.header("Características sociodemográficas")
         st.write("""Si dejas las opciones en blanco, se entiende que entran todos los clientes. Por ejemplo, si no seleccionas Sexo, tu audiencia tendrá ambos sexos""")
-        sociodem_sexo = st.multiselect('Sexo', sexo, key='sociodem_sexo')
+        sociodem_sexo = st.multiselect('Sexo', sexo, placeholder = 'Selecciona un sexo', key='sociodem_sexo')
         # Layout para tener las entradas en la misma fila
         col_sociodem_edad_1, col_sociodem_edad_2, col_sociodem_edad_3 = st.columns([2, 1, 1])
         
         with col_sociodem_edad_1:
-            sociodem_edad_rango = st.selectbox("Rango de edad", rango_opciones, key='sociodem_edad_rango')
+            sociodem_edad_rango = st.selectbox("Rango de edad", rango_opciones, index=None, placeholder = 'Selecciona un rango', key='sociodem_edad_rango')
 
         if sociodem_edad_rango == "Rango":
             # Input para el precio "desde"
@@ -719,11 +750,11 @@ def main():
             with col_sociodem_edad_2:
                 sociodem_edad_desde = st.number_input('Edad', min_value=18, max_value=120, value=None, key = 'sociodem_edad_desde')
                 
-        sociodem_gse = st.multiselect('GSE', gse, key='sociodem_gse')
-        sociodem_marital_status = st.multiselect('Estado civil', marital_status, key='sociodem_marital_status')
-        sociodem_education_level = st.multiselect('Nivel de estudios', educational_level, key='sociodem_education_level')
-        sociodem_regiones = st.multiselect('Regiones', regiones, key='sociodem_regiones')
-        sociodem_comunas = st.multiselect('Comunas', comunas, key='sociodem_comunas')
+        sociodem_gse = st.multiselect('GSE', gse, placeholder = 'Selecciona GSEs', key='sociodem_gse')
+        sociodem_marital_status = st.multiselect('Estado civil', marital_status, placeholder = 'Selecciona estados civiles', key='sociodem_marital_status')
+        sociodem_education_level = st.multiselect('Nivel de estudios', educational_level, placeholder = 'Selecciona niveles de estudio', key='sociodem_education_level')
+        sociodem_regiones = st.multiselect('Regiones', regiones, placeholder = 'Selecciona regiones', key='sociodem_regiones')
+        sociodem_comunas = st.multiselect('Comunas', comunas, placeholder = 'Selecciona comunas', key='sociodem_comunas')
         sociodem_factura = st.checkbox("Compra con facturas en últimos 2 años", key = 'sociodem_factura',
                                        help = 'Al seleccionar este item, solo se considerarán clientes que hayan pagado al menos una vez con factura en los últimos 2 años.')        
         
@@ -733,7 +764,7 @@ def main():
         col_sociodem_n_vehiculos_1, col_sociodem_n_vehiculos_2, col_sociodem_n_vehiculos_3 = st.columns([2, 1, 1])
         
         with col_sociodem_n_vehiculos_1:
-            sociodem_n_vehiculos_rango = st.selectbox("Filtro de N° vehículos", rango_opciones, key='sociodem_n_vehiculos_rango')
+            sociodem_n_vehiculos_rango = st.selectbox("Filtro de N° vehículos", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_n_vehiculos_rango')
 
         if sociodem_n_vehiculos_rango == "Rango":
             # Input para el precio "desde"
@@ -750,7 +781,7 @@ def main():
         col_sociodem_anio_vehiculos_1, col_sociodem_anio_vehiculos_2,  col_sociodem_anio_vehiculos_3 = st.columns([2, 1, 1])
         
         with col_sociodem_anio_vehiculos_1:
-            sociodem_anio_vehiculos_rango = st.selectbox("Filtro de año de vehículo", rango_opciones, key='sociodem_anio_vehiculos_rango')
+            sociodem_anio_vehiculos_rango = st.selectbox("Filtro de año de vehículo", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_anio_vehiculos_rango')
             
         if sociodem_anio_vehiculos_rango == "Rango":
             # Input para el precio "desde"
@@ -767,21 +798,24 @@ def main():
         col_sociodem_valor_vehiculos_1, col_sociodem_valor_vehiculos_2,  col_sociodem_valor_vehiculos_3 = st.columns([2, 1, 1])
         
         with col_sociodem_valor_vehiculos_1:
-            sociodem_valor_vehiculos_rango = st.selectbox("Filtro de valor de vehículo", rango_opciones, key='sociodem_valor_vehiculos_rango')
+            sociodem_valor_vehiculos_rango = st.selectbox("Filtro valor vehículo (en $M)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_valor_vehiculos_rango')
         
         if sociodem_valor_vehiculos_rango == "Rango":
             # Input para el precio "desde"
             with col_sociodem_valor_vehiculos_2:
-                sociodem_valor_vehiculos_desde = st.number_input('Valor de vehículo desde', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde')
+                sociodem_valor_vehiculos_desde = st.number_input('Valor vehículo desde', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
+                                                                 help='En millones de pesos, por ejemplo: 5.5')
             # Input para el precio "hasta"
             with col_sociodem_valor_vehiculos_3:
-                sociodem_valor_vehiculos_hasta = st.number_input('Valor de vehículo hasta', min_value=0, value=None, key = 'sociodem_valor_vehiculos_hasta')
+                sociodem_valor_vehiculos_hasta = st.number_input('Valor vehículo hasta', min_value=0, value=None, key = 'sociodem_valor_vehiculos_hasta',
+                                                                 help='En millones de pesos, por ejemplo: 25')
         else:
             with col_sociodem_valor_vehiculos_2:
-                sociodem_valor_vehiculos_desde = st.number_input('Valor de vehículo', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde')
+                sociodem_valor_vehiculos_desde = st.number_input('Valor vehículo', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
+                                                                 help='En millones de pesos, por ejemplo: 5.5')
         
-        sociodem_tipo_vehiculo = st.multiselect('Tipo de vehículo', vehicle_type, key='sociodem_tipo_vehiculo')
-        sociodem_marca_vehiculo = st.multiselect('Marca del vehículo', brand_vehicle, key='sociodem_marca_vehiculo')
+        sociodem_tipo_vehiculo = st.multiselect('Tipo de vehículo', vehicle_type, placeholder = 'Selecciona tipos de vehículos', key='sociodem_tipo_vehiculo')
+        sociodem_marca_vehiculo = st.multiselect('Marca del vehículo', brand_vehicle, placeholder = 'Selecciona marcas de vehículos', key='sociodem_marca_vehiculo')
 
     # Crear el formulario
     with st.form(key='my_form'):
