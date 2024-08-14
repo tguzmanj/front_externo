@@ -37,6 +37,8 @@ def lista_a_string(input):
     if not isinstance(input, list): # Si no es una lista
         if input is None: # A los None los deja como un string vacío
             return ""
+        if input is False: # A los False los deja como string vacío
+            return ""
         return str(input)
     if not input:  # Verificar si la lista está vacía
         return ""
@@ -199,18 +201,20 @@ def clear_all():
             # Inicializarla dependiendo de qué es
             if type(st.session_state[i]) is list: # Para multiselect
                 st.session_state[i] = []
-            elif  type(st.session_state[i]) is int: # Para number_input   
+            elif type(st.session_state[i]) is int: # Para number_input   
                 st.session_state[i] = None
-            elif  type(st.session_state[i]) is str: # Para selectbox 
+            elif type(st.session_state[i]) is str: # Para selectbox 
                 st.session_state[i] = ''
+            elif type(st.session_state[i]) is bool: # Para checkbox 
+                st.session_state[i] = False
             else:
-                pass # debugging
+                # debugging
                 # print(i)
                 # print(st.session_state[i])
                 # print(type(st.session_state[i]))
+                pass 
         # Siempre que se limpien las opciones, abrir el expander para que se pueda modificar
         if i == 'expander_open': 
-            print("soy extpander")
             st.session_state[i] = True
     
 # Función para colapsar el expander
@@ -720,7 +724,8 @@ def main():
         sociodem_education_level = st.multiselect('Nivel de estudios', educational_level, key='sociodem_education_level')
         sociodem_regiones = st.multiselect('Regiones', regiones, key='sociodem_regiones')
         sociodem_comunas = st.multiselect('Comunas', comunas, key='sociodem_comunas')
-        
+        sociodem_factura = st.checkbox("Compra con facturas en últimos 2 años", key = 'sociodem_factura',
+                                       help = 'Al seleccionar este item, solo se considerarán clientes que hayan pagado al menos una vez con factura en los últimos 2 años.')        
         
     # Columna 5: Selectbox
     with col5:
@@ -843,6 +848,7 @@ def main():
         json_output["7_info_sociodemografica"]["cust_gse"] = sociodem_gse
         json_output["7_info_sociodemografica"]["cust_education_level"] = sociodem_education_level
         json_output["7_info_sociodemografica"]["cust_marital_status"] = sociodem_marital_status
+        json_output["7_info_sociodemografica"]["compra_con_factura"] = sociodem_factura
         json_output["7_info_sociodemografica"]["regiones"] = sociodem_regiones
         json_output["7_info_sociodemografica"]["cust_city"] = sociodem_comunas
         if sociodem_n_vehiculos_rango == "Rango":
