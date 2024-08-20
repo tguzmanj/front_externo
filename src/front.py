@@ -567,6 +567,8 @@ def main():
                                    'Marca en otras categorías']:
             arq_compra_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='arq_compra_brands',
                                                help='De qué marca estamos hablando en la definición del arquetipo.')
+        else:
+            arq_compra_brands = []
             
         # Categorías F ########################################################
         arq_compra_cat_f = st.multiselect('Categorías de productos', cats_f, placeholder = 'Selecciona categorías', key='arq_compra_cat_f',
