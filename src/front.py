@@ -26,7 +26,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 
-from params import alternativas
+from params import alternativas, dict_reemplazo
 
 # =============================================================================
 # Funciones
@@ -614,7 +614,7 @@ def main():
         # Parametros CMR
         # =============================================================================
 
-        st.header("Compras en negocios usando CMR")
+        st.header("Compras en negocios usando tarjeta de crédito")
         
         # Comercios ###########################################################
         cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], placeholder = 'Selecciona comercios a incluir', key='cmr_comercios',
@@ -886,7 +886,7 @@ def main():
         json_output["7_info_sociodemografica"]["cust_marital_status"] = sociodem_marital_status
         json_output["7_info_sociodemografica"]["compra_con_factura"] = sociodem_factura
         json_output["7_info_sociodemografica"]["regiones"] = sociodem_regiones
-        json_output["7_info_sociodemografica"]["cust_city"] = sociodem_comunas
+        json_output["7_info_sociodemografica"]["cust_city"] = [dict_reemplazo["comunas"].get(item,item) for item in sociodem_comunas]
         if sociodem_n_vehiculos_rango == "Rango":
             json_output["7_info_sociodemografica"]["no_of_vehicle"] = [sociodem_n_vehiculos_desde, sociodem_n_vehiculos_hasta]
         else:
