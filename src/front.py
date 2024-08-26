@@ -931,8 +931,8 @@ def main():
         else:
             json_output["10_loyalty"]["canje"] = [lyty_canje_rango, lyty_canje_desde]
         json_output["11_seguros"]["lapso"] = sf_lapso
-        json_output["11_seguros"]["seguros"] = sf_seguros
-                
+        json_output["11_seguros"]["seguros"] = [dict_reemplazo["sf_seguros"].get(item,item) for item in sf_seguros]
+                        
         # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
         json_output_formated = formateo_json(json_output)
         
