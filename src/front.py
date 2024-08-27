@@ -284,13 +284,45 @@ def eliminar_antes_del_guion(texto):
 def tipo_de_audiencia(json_requerimiento):
     
     # Si el requerimiento pedido tiene algo de CMR, entonces es Deluxe
-    if not all(value == '' for value in json_requerimiento['8_info_cmr'].values()):
+    if any(value != "" for value in json_requerimiento['8_info_cmr'].values()):
         return 'deluxe'
-    # Si tiene marca, es Custom
-    if (json_requerimiento["3_info_cross"]["marcas"] == '') & (json_requerimiento["5_info_arquetipo_compra"]["marcas"] == ''):
-        return 'standard'
-    else:
+    # Si el requerimiento pedido tiene algo de vehículos, entonces es Deluxe
+    if any(value != "" for value in [json_requerimiento["7_info_sociodemografica"]["no_of_vehicle"], 
+                                    json_requerimiento["7_info_sociodemografica"]["vehicle_yr"],
+                                    json_requerimiento["7_info_sociodemografica"]["vehicle_appraised_amt"],
+                                    json_requerimiento["7_info_sociodemografica"]["vehicle_type"],
+                                    json_requerimiento["7_info_sociodemografica"]["vehicle_brand"]]):
+        return 'deluxe'
+    # Si el requerimiento pedido tiene algo de sociodemográfico, entonces es Custom
+    if any(value != "" for value in json_requerimiento['7_info_sociodemografica'].values()):
         return 'custom'
+    # Si el requerimiento pedido tiene algo de marcas, entonces es Custom
+    if any(value != "" for value in [json_requerimiento["3_info_cross"]["marcas"], 
+                                     json_requerimiento["5_info_arquetipo_compra"]["marcas"]]):
+        return 'custom'
+    # Si el requerimiento pedido tiene algo de precios, entonces es Custom
+    if any(value != "" for value in [json_requerimiento["3_info_cross"]["precio"], 
+                                     json_requerimiento["5_info_arquetipo_compra"]["precio"],
+                                     json_requerimiento["8_info_cmr"]["precio"],
+                                     json_requerimiento["8_info_cmr"]["precio_exclusion"]
+                                     ]):
+        return 'custom'
+    # Si el requerimiento pedido tiene algo de ranking transaccional, entonces es Custom
+    if any(value != "" for value in json_requerimiento['9_ranking_transaccional'].values()):
+        return 'custom'
+    # Si el requerimiento pedido tiene algo de seguros Falabella, entonces es Custom
+    if any(value != "" for value in json_requerimiento['11_seguros'].values()):
+        return 'custom'
+    else:
+        return 'standard'
+
+def tipo_de_script(json_requerimiento):
+    
+    # Si el requerimiento pedido tiene algo de arquetipos, entonces es S2
+    if not all(value == '' for value in json_requerimiento['5_info_arquetipo_compra'].values()):
+        return 'S2'
+    else:
+        return 'S1'
 
 # Funciones de conexión a Sharepoint ##########################################
 
@@ -403,6 +435,7 @@ credentials_json = st.secrets["GOOGLE_DRIVE"]["GOOGLE_APPLICATION_CREDENTIALS_JS
 credentials_dict = json.loads(credentials_json)
 
 santiago_tz = pytz.timezone('America/Santiago')
+ayer = (datetime.date.today() - datetime.timedelta(days=1))
 directorio_credenciales = 'src/conn/credentials_module.json'
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
@@ -510,13 +543,14 @@ def main():
         # Lapso ###############################################################
         cross_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cross_lapso',
                                    help='Corresponde al periodo de tiempo que se considerará en la compra de algún producto dentro de la categoría seleccionada.')
-        # if cross_lapso == 'Crear mi propio rango':
-        #     cross_lapso_perso = st.date_input(
-        #         'Selecciona un rango de fechas', 
-        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-        #         key='cross_lapso_perso')
-        # else:
-        #     cross_lapso_perso = None
+        if cross_lapso == 'Crear mi propio rango':
+            cross_lapso_perso = st.date_input(
+                'Selecciona un rango de fechas', 
+                value=((ayer-datetime.timedelta(days=30)).replace(day=1), ayer),
+                max_value = ayer, 
+                key='cross_lapso_perso')
+        else:
+            cross_lapso_perso = None
         
         # Marca ###############################################################
         cross_brands = st.multiselect('Marcas', brands, placeholder = 'Selecciona marcas', key='cross_brands',
@@ -580,7 +614,8 @@ def main():
         # if arq_compra_lapso == 'Crear mi propio rango':
         #     arq_compra_lapso_perso = st.date_input(
         #         'Selecciona un rango de fechas', 
-        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         value=((ayer-datetime.timedelta(days=30)).replace(day=1), ayer),
+        #         max_value = ayer, 
         #         key='arq_compra_lapso_perso')
         # else:
         #     arq_compra_lapso_perso = None
@@ -625,13 +660,14 @@ def main():
         # Lapso ###############################################################
         cmr_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cmr_lapso',
                                  help='Corresponde al periodo de tiempo que se considerará en la compra dentro de los comercios seleccionados.')
-        # if cmr_lapso == 'Crear mi propio rango':
-        #     cmr_lapso_perso = st.date_input(
-        #         'Selecciona un rango de fechas', 
-        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-        #         key='cmr_lapso_perso')
-        # else:
-        #     cmr_lapso_perso = None
+        if cmr_lapso == 'Crear mi propio rango':
+            cmr_lapso_perso = st.date_input(
+                'Selecciona un rango de fechas', 
+                value=((ayer-datetime.timedelta(days=30)).replace(day=1), ayer),
+                max_value = ayer,
+                key='cmr_lapso_perso')
+        else:
+            cmr_lapso_perso = None
         
         # Precio ##############################################################
         
@@ -850,14 +886,16 @@ def main():
         json_output["1_info_general"]["descripcion"] = descripcion
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
-        json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now(tz=santiago_tz).strftime('%Y-%m-%d %H:%M:%S')
-        json_output["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}".replace(" ", "_")
+        json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now(tz=santiago_tz).strftime('%Y-%m-%d %H:%M:%S')        
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
         json_output["2_info_lifestyle"]["objetivo"] = lifestyle_objetivo
         
         json_output["3_info_cross"]["categorias_f"] = cross_cat_f
-        json_output["3_info_cross"]["lapso"] = cross_lapso
+        if cross_lapso == 'Crear mi propio rango':
+            json_output["3_info_cross"]["lapso"] = [x.strftime('%Y-%m-%d') for x in cross_lapso_perso]
+        else:
+            json_output["3_info_cross"]["lapso"] = cross_lapso
         json_output["3_info_cross"]["marcas"] = cross_brands
         if cross_precio_rango == "Rango":
             json_output["3_info_cross"]["precio"] = [cross_precio_desde, cross_precio_hasta]
@@ -901,8 +939,11 @@ def main():
             json_output["7_info_sociodemografica"]["vehicle_appraised_amt"] = [sociodem_valor_vehiculos_rango, sociodem_valor_vehiculos_desde]
         json_output["7_info_sociodemografica"]["vehicle_type"] = sociodem_tipo_vehiculo
         json_output["7_info_sociodemografica"]["vehicle_brand"] = sociodem_marca_vehiculo
-     
-        json_output["8_info_cmr"]["lapso"] = cmr_lapso
+
+        if cmr_lapso == 'Crear mi propio rango':
+            json_output["8_info_cmr"]["lapso"] = [x.strftime('%Y-%m-%d') for x in cmr_lapso_perso]
+        else:
+            json_output["8_info_cmr"]["lapso"] = cmr_lapso
         json_output["8_info_cmr"]["comercios"] = cmr_comercios
         json_output["8_info_cmr"]["comercios_exclusion"] = cmr_comercios_exclusion
         json_output["8_info_cmr"]["tipo_compra"] = cmr_tipo_compra
@@ -938,6 +979,9 @@ def main():
         
         # Agrega el tipo de audiencia
         json_output_formated["1_info_general"]["tipo_audiencia"] = tipo_de_audiencia(json_output_formated)
+        
+        # Agrega el nombre a la audiencia
+        json_output_formated["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}-{tipo_de_script(json_output_formated)}".replace(" ", "_")
         
         # Convertir el diccionario a JSON
         datos_json = json.dumps(json_output_formated, 
