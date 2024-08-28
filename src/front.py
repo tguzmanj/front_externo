@@ -228,6 +228,7 @@ def parte_superior():
     global campania
     global mes_implementacion
     global solicitada_cliente
+    global solicitante
     global descripcion
     
     authenticator.logout("Logout")
@@ -246,7 +247,7 @@ def parte_superior():
             col_cont_1, col_cont_2, col_cont_3 = st.columns(3)
             
             with col_cont_1:
-                holding = st.selectbox('Holding', [""]+holding_list, key='holding')
+                holding = st.selectbox('Holding', holding_list, index=None, placeholder = 'Selecciona un holding', key='holding')
                 anunciante = stDatalist(label='Anunciante', options=[""]+anunciante_list, key='anunciante')
                 campania = st.text_input("Campaña", key='campania')
             
@@ -264,6 +265,10 @@ def parte_superior():
                     
             with col_cont_3:
                 solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None, key='solicitada_cliente')
+                if solicitada_cliente == "Sí":
+                    solicitante = st.text_input("Solicitante", key='solicitante')
+                else:
+                    solicitante = ''
                 descripcion = st.text_input("Breve descripción de la audiencia a solicitar", key = 'descripcion')
                 # Botón de avanzar
                 if st.button("Siguiente", on_click=collapse_expander):
@@ -883,6 +888,7 @@ def main():
         json_output["1_info_general"]["anunciante"] = anunciante
         json_output["1_info_general"]["comentario"] = ''
         json_output["1_info_general"]["solicitada_cliente"] = '' if solicitada_cliente is None else solicitada_cliente
+        json_output["1_info_general"]["solicitante"] = solicitante
         json_output["1_info_general"]["descripcion"] = descripcion
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
         json_output["1_info_general"]["campania"] = campania
