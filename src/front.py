@@ -291,6 +291,9 @@ def main():
         cross_canal_compra = st.selectbox('Canal de compra', ["Solo online", "Solo offline"], index=None, placeholder = 'Selecciona un canal de compra', key='cross_canal_compra',
                                           help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
         
+        cross_top_descuento = st.checkbox("Top 20% discount seekers", key = 'cross_top_descuento',
+                                       help = 'Al seleccionar este item, solo se considerarán a los top 20% de clientes que más veces compren con descuento en las categorías y lapso seleccionados.')        
+        
         # =============================================================================
         # Parametros Arquetipo de Compra
         # =============================================================================
@@ -612,7 +615,8 @@ def main():
         else:
             json_output["3_info_cross"]["precio"] = [cross_precio_rango, cross_precio_desde]
         json_output["3_info_cross"]["canal_compra"] = cross_canal_compra
-       
+        json_output["3_info_cross"]["top_descuento"] = cross_top_descuento
+        
         json_output["4_info_arquetipo_negocio"]["arquetipo"] = arq_neg_arq_neg
         
         json_output["5_info_arquetipo_compra"]["arquetipo"] = arq_compra_arq_compra
