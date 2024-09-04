@@ -174,6 +174,7 @@ lifestyle_objetivo = alternativas['lifestyle_objetivo']
 arquetipo_de_negocio = alternativas['arquetipo_de_negocio']
 arquetipo_de_compra = alternativas['arquetipo_de_compra']
 sf_seguros = alternativas['sf_seguros']
+property_type = alternativas['property_type']
 
 def main():
     
@@ -218,23 +219,47 @@ def main():
                                             help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
 
         # =============================================================================
-        # Parametros Seguros
+        # Parametros Loyalty
         # =============================================================================
+
+        st.header("Programa de lealtad")
         
-        st.header("Seguros Falabella")
+        # Acumulación y canje #########################################################
+        # Layout para tener las entradas en la misma fila
+        col_lyty_acumul_1, col_lyty_acumul_2,  col_lyty_acumul_3 = st.columns([2, 1, 1])
+        with col_lyty_acumul_1:
+            lyty_acumul_rango = st.selectbox("Filtro de acumulación", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_acumul_rango')
+            
+        if lyty_acumul_rango == "Rango":
+            # Input para el precio "desde"
+            with col_lyty_acumul_2:
+                lyty_acumul_desde = st.number_input('Acumulación desde', min_value=0, value=None, key='lyty_acumul_desde')
+            # Input para el precio "hasta"
+            with col_lyty_acumul_3:
+                lyty_acumul_hasta = st.number_input('Acumulación hasta', min_value=0, value=None, key='lyty_acumul_hasta')
+        else:
+            with col_lyty_acumul_2:
+                lyty_acumul_desde = st.number_input('Acumulación', min_value=0, value=None, key='lyty_acumul_desde')
+        
+        # Layout para tener las entradas en la misma fila
+        col_lyty_canje_1, col_lyty_canje_2,  col_lyty_canje_3 = st.columns([2, 1, 1])
+        with col_lyty_canje_1:
+            lyty_canje_rango = st.selectbox("Filtro de canje", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_canje_rango')
+            
+        if lyty_canje_rango == "Rango":
+            # Input para el precio "desde"
+            with col_lyty_canje_2:
+                lyty_canje_desde = st.number_input('Canje desde', min_value=0, value=None, key='lyty_canje_desde')
+            # Input para el precio "hasta"
+            with col_lyty_canje_3:
+                lyty_canje_hasta = st.number_input('Canje hasta', min_value=0, value=None, key='lyty_canje_hasta')
+        else:
+            with col_lyty_canje_2:
+                lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde')
         
         # Lapso ###############################################################
-        sf_lapso = st.selectbox('Tipo de seguro', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
-                                help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
-        # if sf_lapso == 'Crear mi propio rango':
-        #     sf_lapso_perso = st.date_input(
-        #         'Selecciona un rango de fechas', 
-        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
-        #         key='sf_lapso_perso')
-        # else:
-        #     sf_lapso_perso = None
-        
-        sf_seguros = st.multiselect('Tipo de seguro', alternativas['sf_seguros'], placeholder = "Selecciona seguros", key='sf_seguros')
+        lyty_lapso = st.selectbox('Lapso', lapso_fijo, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
+                                  help='Corresponde al periodo de tiempo que se considerará la acumulación y/o el canje')
         
     # Columna 2: 4 selectbox y 4 multiselect
     with col2:
@@ -292,7 +317,7 @@ def main():
                                           help='Permite considerar solo transacciones realizadas online (web o app) o solo presenciales.')
         
         cross_top_descuento = st.checkbox("Top 20% discount seekers", key = 'cross_top_descuento',
-                                       help = 'Al seleccionar este item, solo se considerarán a los top 20% de clientes que más veces compren con descuento en las categorías y lapso seleccionados.')        
+                                       help = 'Al seleccionar este item, solo se considerarán a los top 20% de clientes que más veces compren con descuento dentro de lo seleccionado en este apartado.')        
         
         # =============================================================================
         # Parametros Arquetipo de Compra
@@ -366,8 +391,10 @@ def main():
         # Comercios ###########################################################
         cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], placeholder = 'Selecciona comercios a incluir', key='cmr_comercios',
                                        help='Son los comercios en los que deben haber comprado para aparecer en la audiencia.')
+        cmr_keywords = st.text_input("Keywords a incluir", key='cmr_keywords')
         cmr_comercios_exclusion = st.multiselect('Comercios a excluir', alternativas['comercios'], placeholder = 'Selecciona comercios a excluir', key='cmr_comercios_exclusion',
                                                  help='La audiencia resultante no tendrá transacciones realizadas en estos comercios')
+        cmr_keywords_exclusion = st.text_input("Keywords a excluir", key='cmr_keywords_exclusion')
         
         # Lapso ###############################################################
         cmr_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cmr_lapso',
@@ -431,48 +458,26 @@ def main():
         cmr_tipo_compra_exclusion = st.selectbox('Tipo de compra comercios a excluir', ["Solo nacional", "Solo internacional"], placeholder = 'Selecciona un tipo de compra', index=None, key='cmr_tipo_compra_exclusion',
                                                  help = 'Permite considerar solo transacciones nacionales o internacionales para los comercios a excluir.')
 
-        # =============================================================================
-        # Parametros Loyalty
-        # =============================================================================
-
-        st.header("Programa de lealtad")
         
-        # Acumulación y canje #########################################################
-        # Layout para tener las entradas en la misma fila
-        col_lyty_acumul_1, col_lyty_acumul_2,  col_lyty_acumul_3 = st.columns([2, 1, 1])
-        with col_lyty_acumul_1:
-            lyty_acumul_rango = st.selectbox("Filtro de acumulación", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_acumul_rango')
-            
-        if lyty_acumul_rango == "Rango":
-            # Input para el precio "desde"
-            with col_lyty_acumul_2:
-                lyty_acumul_desde = st.number_input('Acumulación desde', min_value=0, value=None, key='lyty_acumul_desde')
-            # Input para el precio "hasta"
-            with col_lyty_acumul_3:
-                lyty_acumul_hasta = st.number_input('Acumulación hasta', min_value=0, value=None, key='lyty_acumul_hasta')
-        else:
-            with col_lyty_acumul_2:
-                lyty_acumul_desde = st.number_input('Acumulación', min_value=0, value=None, key='lyty_acumul_desde')
         
-        # Layout para tener las entradas en la misma fila
-        col_lyty_canje_1, col_lyty_canje_2,  col_lyty_canje_3 = st.columns([2, 1, 1])
-        with col_lyty_canje_1:
-            lyty_canje_rango = st.selectbox("Filtro de canje", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='lyty_canje_rango')
-            
-        if lyty_canje_rango == "Rango":
-            # Input para el precio "desde"
-            with col_lyty_canje_2:
-                lyty_canje_desde = st.number_input('Canje desde', min_value=0, value=None, key='lyty_canje_desde')
-            # Input para el precio "hasta"
-            with col_lyty_canje_3:
-                lyty_canje_hasta = st.number_input('Canje hasta', min_value=0, value=None, key='lyty_canje_hasta')
-        else:
-            with col_lyty_canje_2:
-                lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde')
+        # =============================================================================
+        # Parametros Seguros
+        # =============================================================================
+        
+        st.header("Seguros Falabella")
         
         # Lapso ###############################################################
-        lyty_lapso = st.selectbox('Lapso', lapso_fijo, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
-                                  help='Corresponde al periodo de tiempo que se considerará la acumulación y/o el canje')
+        sf_lapso = st.selectbox('Tipo de seguro', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
+                                help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
+        # if sf_lapso == 'Crear mi propio rango':
+        #     sf_lapso_perso = st.date_input(
+        #         'Selecciona un rango de fechas', 
+        #         value=(datetime.date(2024, 6, 1), datetime.datetime.now()),
+        #         key='sf_lapso_perso')
+        # else:
+        #     sf_lapso_perso = None
+        
+        sf_seguros = st.multiselect('Tipo de seguro', alternativas['sf_seguros'], placeholder = "Selecciona seguros", key='sf_seguros')
         
     # Columna 4: Slide input que permite poner un rango de valores
     with col4:
@@ -527,6 +532,8 @@ def main():
             with col_sociodem_n_vehiculos_2:
                 sociodem_n_vehiculos_desde = st.number_input('N° vehículos', min_value=0, value=None, key = 'sociodem_n_vehiculos_desde')
         
+        sociodem_tipo_vehiculo = st.multiselect('Tipo de vehículo', vehicle_type, placeholder = 'Selecciona tipos de vehículos', key='sociodem_tipo_vehiculo')
+        
         # Layout para tener las entradas en la misma fila
         col_sociodem_anio_vehiculos_1, col_sociodem_anio_vehiculos_2,  col_sociodem_anio_vehiculos_3 = st.columns([2, 1, 1])
         
@@ -553,19 +560,74 @@ def main():
         if sociodem_valor_vehiculos_rango == "Rango":
             # Input para el precio "desde"
             with col_sociodem_valor_vehiculos_2:
-                sociodem_valor_vehiculos_desde = st.number_input('Valor vehículo desde', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
+                sociodem_valor_vehiculos_desde = st.number_input('Valor desde', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
                                                                  help='En millones de pesos, por ejemplo: 5.5')
             # Input para el precio "hasta"
             with col_sociodem_valor_vehiculos_3:
-                sociodem_valor_vehiculos_hasta = st.number_input('Valor vehículo hasta', min_value=0, value=None, key = 'sociodem_valor_vehiculos_hasta',
+                sociodem_valor_vehiculos_hasta = st.number_input('Valor hasta', min_value=0, value=None, key = 'sociodem_valor_vehiculos_hasta',
                                                                  help='En millones de pesos, por ejemplo: 25')
         else:
             with col_sociodem_valor_vehiculos_2:
-                sociodem_valor_vehiculos_desde = st.number_input('Valor vehículo', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
+                sociodem_valor_vehiculos_desde = st.number_input('Valor', min_value=0, value=None, key = 'sociodem_valor_vehiculos_desde',
                                                                  help='En millones de pesos, por ejemplo: 5.5')
         
-        sociodem_tipo_vehiculo = st.multiselect('Tipo de vehículo', vehicle_type, placeholder = 'Selecciona tipos de vehículos', key='sociodem_tipo_vehiculo')
         sociodem_marca_vehiculo = st.multiselect('Marca del vehículo', brand_vehicle, placeholder = 'Selecciona marcas de vehículos', key='sociodem_marca_vehiculo')
+
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_n_propiedades_1, col_sociodem_n_propiedades_2, col_sociodem_n_propiedades_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_n_propiedades_1:
+            sociodem_n_propiedades_rango = st.selectbox("Filtro de N° propiedades", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_n_propiedades_rango')
+
+        if sociodem_n_propiedades_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_n_propiedades_2:
+                sociodem_n_propiedades_desde = st.number_input('N° desde', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
+            # Input para el precio "hasta"
+            with col_sociodem_n_propiedades_3:
+                sociodem_n_propiedades_hasta = st.number_input('N° hasta', min_value=0, value=None, key = 'sociodem_n_propiedades_hasta')
+        else:
+            with col_sociodem_n_propiedades_2:
+                sociodem_n_propiedades_desde = st.number_input('N° propiedades', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
+
+        sociodem_tipo_propiedad = st.multiselect('Tipo de propiedad', property_type, placeholder = 'Selecciona tipos de propiedades', key='sociodem_tipo_propiedad')
+
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_valor_propiedades_1, col_sociodem_valor_propiedades_2,  col_sociodem_valor_propiedades_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_valor_propiedades_1:
+            sociodem_valor_propiedades_rango = st.selectbox("Filtro valor propiedad (en $M)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_valor_propiedades_rango')
+        
+        if sociodem_valor_propiedades_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_valor_propiedades_2:
+                sociodem_valor_propiedad_desde = st.number_input('Valor desde', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
+                                                                 help='En millones de pesos, por ejemplo: 120.5')
+            # Input para el precio "hasta"
+            with col_sociodem_valor_propiedades_3:
+                sociodem_valor_propiedad_hasta = st.number_input('Valor hasta', min_value=0, value=None, key = 'sociodem_valor_propiedad_hasta',
+                                                                 help='En millones de pesos, por ejemplo: 180')
+        else:
+            with col_sociodem_valor_propiedades_2:
+                sociodem_valor_propiedad_desde = st.number_input('Valor', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
+                                                                 help='En millones de pesos, por ejemplo: 120.5')
+
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_m2_propiedad_1, col_sociodem_m2_propiedad_2,  col_sociodem_m2_propiedad_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_m2_propiedad_1:
+            sociodem_m2_propiedad_rango = st.selectbox("Filtro de m2 de propiedad", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_m2_propiedad_rango')
+            
+        if sociodem_m2_propiedad_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_m2_propiedad_2:
+                sociodem_m2_propiedad_desde = st.number_input('m2 desde', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
+            # Input para el precio "hasta"
+            with col_sociodem_m2_propiedad_3:
+                sociodem_m2_propiedad_hasta = st.number_input('m2 hasta', min_value=0, value=None, key = 'sociodem_m2_propiedad_hasta')
+        else:
+            with col_sociodem_m2_propiedad_2:
+                sociodem_m2_propiedad_desde = st.number_input('m2 propiedad', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
 
     # Crear el formulario
     with st.form(key='my_form'):
@@ -653,6 +715,19 @@ def main():
             json_output["7_info_sociodemografica"]["vehicle_appraised_amt"] = [sociodem_valor_vehiculos_rango, sociodem_valor_vehiculos_desde]
         json_output["7_info_sociodemografica"]["vehicle_type"] = sociodem_tipo_vehiculo
         json_output["7_info_sociodemografica"]["vehicle_brand"] = sociodem_marca_vehiculo
+        if sociodem_n_propiedades_rango == "Rango":
+            json_output["7_info_sociodemografica"]["no_of_property"] = [sociodem_n_propiedades_desde, sociodem_n_propiedades_hasta]
+        else:
+            json_output["7_info_sociodemografica"]["no_of_property"] = [sociodem_n_propiedades_rango, sociodem_n_propiedades_desde]
+        json_output["7_info_sociodemografica"]["property_type"] = sociodem_tipo_propiedad
+        if sociodem_valor_propiedades_rango == "Rango":
+            json_output["7_info_sociodemografica"]["property_value"] = [sociodem_valor_propiedad_desde, sociodem_valor_propiedad_hasta]
+        else:
+            json_output["7_info_sociodemografica"]["property_value"] = [sociodem_valor_propiedades_rango, sociodem_valor_propiedad_desde]
+        if sociodem_m2_propiedad_rango == "Rango":
+            json_output["7_info_sociodemografica"]["property_built_mts"] = [sociodem_m2_propiedad_desde, sociodem_m2_propiedad_hasta]
+        else:
+            json_output["7_info_sociodemografica"]["property_built_mts"] = [sociodem_m2_propiedad_rango, sociodem_m2_propiedad_desde]
 
         if cmr_lapso == 'Crear mi propio rango':
             json_output["8_info_cmr"]["lapso"] = [x.strftime('%Y-%m-%d') for x in cmr_lapso_perso]
@@ -660,6 +735,8 @@ def main():
             json_output["8_info_cmr"]["lapso"] = cmr_lapso
         json_output["8_info_cmr"]["comercios"] = cmr_comercios
         json_output["8_info_cmr"]["comercios_exclusion"] = cmr_comercios_exclusion
+        json_output["8_info_cmr"]["keywords"] = cmr_keywords
+        json_output["8_info_cmr"]["keywords_exclusion"] = cmr_keywords_exclusion
         json_output["8_info_cmr"]["tipo_compra"] = cmr_tipo_compra
         json_output["8_info_cmr"]["tipo_compra_exclusion"] = cmr_tipo_compra_exclusion
         if cmr_precio_rango == "Rango":
