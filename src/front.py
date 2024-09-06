@@ -132,7 +132,50 @@ def parte_superior():
                         st.session_state.siguiente = True
                     else:
                         st.warning("Por favor, rellena todos los campos obligatorios.")
-                    
+
+def reglas_enviar_formulario(json):
+    # Si se ingresó Lifestyles, todos los campos deben estar ingresados
+    if any(value != "" for value in json['2_info_lifestyle'].values()):
+        if any(value == "" for value in json['2_info_lifestyle'].values()):
+            st.warning("Todos los campos de audiencia 'Lifestyle' deben estar ingresados")
+            return False
+    # Si se ingresó Ranking de transacciones, debe estar ingresada la BU, el KPI y el top de clientes
+    if any(value != "" for value in json['9_ranking_transaccional'].values()):
+        if (json['9_ranking_transaccional']['unidad_de_negocio'] == '') | \
+           (json['9_ranking_transaccional']['variable_trx'] == '') | \
+           (json['9_ranking_transaccional']['n_mejores_clientes'] == ''):
+            st.warning("Audiencias de 'Ranking de transacciones' deben tener al menos la unidad de negocio, el KPI a utilizar y el top de clientes requerido")
+            return False
+    # Si se ingresó Programa de lealtad, debe estar ingresado el lapso y uno de los otros dos campos
+    if any(value != "" for value in json['10_loyalty'].values()):
+        if (json['10_loyalty']['lapso'] == '') | ((json['10_loyalty']['acumulacion'] == '') & (json['10_loyalty']['canje'] == '')):
+            st.warning("Audiencias de 'Programa de lealtad' deben tener el lapso y acumulación o canje ingresados")
+            return False
+    # Si se ingresó cross, debe estar ingresado el lapso y categorías
+    if any(value != "" for value in json['3_info_cross'].values()):
+        if (json['3_info_cross']['lapso'] == '') | (json['3_info_cross']['categorias_f'] == ''):
+            st.warning("Audiencias de 'Compras en categorías de productos' deben tener al menos el lapso y sus categorías ingresados")
+            return False    
+    # Si se ingresó arquetipo de compra, debe estar ingresado el lapso, categorías y arquetipo
+    if any(value != "" for value in json['5_info_arquetipo_compra'].values()):
+        if (json['5_info_arquetipo_compra']['lapso'] == '') | \
+            (json['5_info_arquetipo_compra']['categorias_f'] == '') | \
+            (json['5_info_arquetipo_compra']['arquetipo'] == ''):
+            st.warning("Audiencias de 'Arquetipo de Compra' deben tener al menos el arquetipo, el lapso y sus categorías ingresados")
+            return False        
+    # Si se ingresó CMR, debe estar ingresado el lapso
+    if any(value != "" for value in json['8_info_cmr'].values()):
+        if json['8_info_cmr']['lapso'] == '':
+            st.warning("El campo 'Lapso' es obligatorio en audiencias de 'Compras en negocios usando tarjeta de crédito'")
+            return False
+    # Si se ingresó Seguros Falabella, todos los campos deben estar ingresados
+    if any(value != "" for value in json['11_seguros'].values()):
+        if any(value == "" for value in json['11_seguros'].values()):
+            st.warning("Todos los campos de audiencia 'Seguros Falabella' deben estar ingresados")
+            return False
+
+    return True
+
 # =============================================================================
 # Parámetros
 # =============================================================================
@@ -467,7 +510,7 @@ def main():
         st.header("Seguros Falabella")
         
         # Lapso ###############################################################
-        sf_lapso = st.selectbox('Tipo de seguro', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
+        sf_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
                                 help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
         # if sf_lapso == 'Crear mi propio rango':
         #     sf_lapso_perso = st.date_input(
@@ -637,20 +680,9 @@ def main():
     # Mostrar los valores seleccionados
     if submit_button:
         
-        # No aumentar correlativo cuando sea una prueba
-        if campania != 'prueba': # Si la ejecución no es una prueba
-            credenciales = login(credentials_dict)
-            # Carga el último correlativo
-            st.session_state.correlativo, archivo_correlativo = cargar_correlativo_desde_google_drive('ultimo_correlativo_usado.txt', credenciales)
-        else:
-            st.session_state.correlativo = 99900
-            
         # Load data from JSON file
         with open('src/json_vacio.json', 'r') as f:
             json_output = json.load(f)
-        
-        # Incrementar el ID correlativo y guardarlo
-        st.session_state.correlativo += 1
         
         json_output["1_info_general"]["holding"] = holding
         json_output["1_info_general"]["agencia"] = ''
@@ -764,47 +796,61 @@ def main():
             json_output["10_loyalty"]["canje"] = [lyty_canje_rango, lyty_canje_desde]
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = [dict_reemplazo["sf_seguros"].get(item,item) for item in sf_seguros]
-                        
+        
         # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
         json_output_formated = formateo_json(json_output)
         
-        # Agrega el tipo de audiencia
-        json_output_formated["1_info_general"]["tipo_audiencia"] = tipo_de_audiencia(json_output_formated)
+        # Checkea que los campos estén correctamente ingresados
+        if reglas_enviar_formulario(json_output_formated):
         
-        # Agrega el nombre a la audiencia
-        json_output_formated["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}-{tipo_de_script(json_output_formated)}".replace(" ", "_")
-        
-        # Convertir el diccionario a JSON
-        datos_json = json.dumps(json_output_formated, 
-                                indent=4, # Para que tenga identación de JSON
-                                ensure_ascii=False
-                                ).encode('latin-1')
-                
-        file_content = io.BytesIO(datos_json)
-        
-        if campania != 'prueba':
-            # Subir el JSON a la carpeta online
-            subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
-
-        # cargar_archivo_a_sharepoint(file_content.getvalue(), 
-        #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
-        #                             st.secrets["SITE_URL"], 
-        #                             st.secrets["USERNAME"], 
-        #                             st.secrets["PASSWORD"], 
-        #                             st.secrets["FOLDER_URL"])
-        
-        if campania != 'prueba':
-            # Actualiza el archivo de correlativos con el último correlativo usado
-            cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
+            # Agrega el tipo de audiencia
+            json_output_formated["1_info_general"]["tipo_audiencia"] = tipo_de_audiencia(json_output_formated)
             
-        # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
-        #                             'ultimo_correlativo_usado.txt', 
-        #                             st.secrets["SITE_URL"], 
-        #                             st.secrets["USERNAME"], 
-        #                             st.secrets["PASSWORD"], 
-        #                             st.secrets["FOLDER_URL"])
-
-        st.write(json_output_formated)
+            # No aumentar correlativo cuando sea una prueba
+            if campania != 'prueba': # Si la ejecución no es una prueba
+                credenciales = login(credentials_dict)
+                # Carga el último correlativo
+                st.session_state.correlativo, archivo_correlativo = cargar_correlativo_desde_google_drive('ultimo_correlativo_usado.txt', credenciales)
+            else:
+                st.session_state.correlativo = 99900
+                
+            # Incrementar el ID correlativo y guardarlo
+            st.session_state.correlativo += 1
+            
+            # Agrega el nombre a la audiencia
+            json_output_formated["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}-{tipo_de_script(json_output_formated)}".replace(" ", "_")
+            
+            # Convertir el diccionario a JSON
+            datos_json = json.dumps(json_output_formated, 
+                                    indent=4, # Para que tenga identación de JSON
+                                    ensure_ascii=False
+                                    ).encode('latin-1')
+                    
+            file_content = io.BytesIO(datos_json)
+            
+            if campania != 'prueba':
+                # Subir el JSON a la carpeta online
+                subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
+    
+            # cargar_archivo_a_sharepoint(file_content.getvalue(), 
+            #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
+            #                             st.secrets["SITE_URL"], 
+            #                             st.secrets["USERNAME"], 
+            #                             st.secrets["PASSWORD"], 
+            #                             st.secrets["FOLDER_URL"])
+            
+            if campania != 'prueba':
+                # Actualiza el archivo de correlativos con el último correlativo usado
+                cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
+                
+            # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
+            #                             'ultimo_correlativo_usado.txt', 
+            #                             st.secrets["SITE_URL"], 
+            #                             st.secrets["USERNAME"], 
+            #                             st.secrets["PASSWORD"], 
+            #                             st.secrets["FOLDER_URL"])
+    
+            st.write(json_output_formated)
 
 
 # =============================================================================
