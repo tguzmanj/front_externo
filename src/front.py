@@ -134,6 +134,11 @@ def parte_superior():
                         st.warning("Por favor, rellena todos los campos obligatorios.")
 
 def reglas_enviar_formulario(json):
+    # Si se ingresó cross, no puede haber arquetipo de compra y viceversa
+    if (any(value != "" for value in json['3_info_cross'].values()) & any(value != "" for value in json['5_info_arquetipo_compra'].values())):
+        st.warning('No pueden enviarse audiencias de "Compras en categorías de productos" y de "Arquetipo de Compra" en el mismo requerimiento')
+        return False
+    
     # Si se ingresó Lifestyles, todos los campos deben estar ingresados
     if any(value != "" for value in json['2_info_lifestyle'].values()):
         if any(value == "" for value in json['2_info_lifestyle'].values()):
@@ -173,7 +178,7 @@ def reglas_enviar_formulario(json):
         if any(value == "" for value in json['11_seguros'].values()):
             st.warning("Todos los campos de audiencia 'Seguros Falabella' deben estar ingresados")
             return False
-
+    
     return True
 
 # =============================================================================
@@ -799,7 +804,6 @@ def main():
         
         # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
         json_output_formated = formateo_json(json_output)
-        
         # Checkea que los campos estén correctamente ingresados
         if reglas_enviar_formulario(json_output_formated):
         
@@ -831,6 +835,7 @@ def main():
             if campania != 'prueba':
                 # Subir el JSON a la carpeta online
                 subir_json(file_content, json_output_formated["1_info_general"]["nombre_unico"]+'.json', credenciales)
+                st.success('Requerimiento de audiencia enviada correctamente', icon="✅")
     
             # cargar_archivo_a_sharepoint(file_content.getvalue(), 
             #                             json_output["1_info_general"]["nombre_unico"]+'.json', 
@@ -843,13 +848,14 @@ def main():
                 # Actualiza el archivo de correlativos con el último correlativo usado
                 cargar_correlativo_hacia_google_drive(archivo_correlativo, str(st.session_state.correlativo))
                 
+                
             # cargar_archivo_a_sharepoint(st.session_state.correlativo, 
             #                             'ultimo_correlativo_usado.txt', 
             #                             st.secrets["SITE_URL"], 
             #                             st.secrets["USERNAME"], 
             #                             st.secrets["PASSWORD"], 
             #                             st.secrets["FOLDER_URL"])
-    
+            
             st.write(json_output_formated)
 
 
