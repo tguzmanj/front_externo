@@ -168,10 +168,11 @@ def reglas_enviar_formulario(json):
             (json['5_info_arquetipo_compra']['arquetipo'] == ''):
             st.warning("Audiencias de 'Arquetipo de Compra' deben tener al menos el arquetipo, el lapso y sus categorías ingresados")
             return False        
-    # Si se ingresó CMR, debe estar ingresado el lapso
+    # Si se ingresó CMR, debe estar ingresado el lapso y comercios/keywords
     if any(value != "" for value in json['8_info_cmr'].values()):
-        if json['8_info_cmr']['lapso'] == '':
-            st.warning("El campo 'Lapso' es obligatorio en audiencias de 'Compras en negocios usando tarjeta de crédito'")
+        if (json['8_info_cmr']['lapso'] == '') | ((json['8_info_cmr']['comercios'] == '') & (json['8_info_cmr']['keywords'] == '') \
+                                                  & (json['8_info_cmr']['comercios_exclusion'] == '') & (json['8_info_cmr']['keywords_exclusion'] == '')):
+            st.warning("Audiencias de 'Compras en negocios usando tarjeta de crédito' deben al menos tener el lapso y comercios o keywords ingresados")
             return False
     # Si se ingresó Seguros Falabella, todos los campos deben estar ingresados
     if any(value != "" for value in json['11_seguros'].values()):
@@ -349,15 +350,15 @@ def main():
         if cross_precio_rango == "Rango":
             # Input para el precio "desde"
             with col_cross_2:
-                cross_precio_desde = st.number_input("Precio desde", value=None, key='cross_precio_desde',
+                cross_precio_desde = st.number_input("Precio desde", min_value=0, value=None, key='cross_precio_desde',
                                                      help='En $, por ejemplo: 9990')
             # Input para el precio "hasta"
             with col_cross_3:
-                cross_precio_hasta = st.number_input("Precio hasta", value=None, key='cross_precio_hasta',
+                cross_precio_hasta = st.number_input("Precio hasta", min_value=0, value=None, key='cross_precio_hasta',
                                                      help='En $, por ejemplo: 59990')
         else:
             with col_cross_2:
-                cross_precio_desde = st.number_input("Precio", value=None, key='cross_precio_desde',
+                cross_precio_desde = st.number_input("Precio", min_value=0, value=None, key='cross_precio_desde',
                                                      help='En $, por ejemplo: 9990')
     
         # Canal de compra #####################################################
