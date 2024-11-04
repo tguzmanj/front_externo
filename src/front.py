@@ -224,6 +224,7 @@ arquetipo_de_negocio = alternativas['arquetipo_de_negocio']
 arquetipo_de_compra = alternativas['arquetipo_de_compra']
 sf_seguros = alternativas['sf_seguros']
 property_type = alternativas['property_type']
+cluster = alternativas['cluster']
 
 def main():
     
@@ -562,6 +563,62 @@ def main():
         sociodem_factura = st.checkbox("Compra con facturas en últimos 2 años", key = 'sociodem_factura',
                                        help = 'Al seleccionar este item, solo se considerarán clientes que hayan pagado al menos una vez con factura en los últimos 2 años.')        
         
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_n_propiedades_1, col_sociodem_n_propiedades_2, col_sociodem_n_propiedades_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_n_propiedades_1:
+            sociodem_n_propiedades_rango = st.selectbox("Filtro de N° propiedades", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_n_propiedades_rango')
+
+        if sociodem_n_propiedades_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_n_propiedades_2:
+                sociodem_n_propiedades_desde = st.number_input('N° desde', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
+            # Input para el precio "hasta"
+            with col_sociodem_n_propiedades_3:
+                sociodem_n_propiedades_hasta = st.number_input('N° hasta', min_value=0, value=None, key = 'sociodem_n_propiedades_hasta')
+        else:
+            with col_sociodem_n_propiedades_2:
+                sociodem_n_propiedades_desde = st.number_input('N° propiedades', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
+
+        sociodem_tipo_propiedad = st.multiselect('Tipo de propiedad', property_type, placeholder = 'Selecciona tipos de propiedades', key='sociodem_tipo_propiedad')
+
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_valor_propiedades_1, col_sociodem_valor_propiedades_2,  col_sociodem_valor_propiedades_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_valor_propiedades_1:
+            sociodem_valor_propiedades_rango = st.selectbox("Filtro valor propiedad (en $M)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_valor_propiedades_rango')
+        
+        if sociodem_valor_propiedades_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_valor_propiedades_2:
+                sociodem_valor_propiedad_desde = st.number_input('Valor desde', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
+                                                                 help='En millones de pesos, por ejemplo: 120.5')
+            # Input para el precio "hasta"
+            with col_sociodem_valor_propiedades_3:
+                sociodem_valor_propiedad_hasta = st.number_input('Valor hasta', min_value=0, value=None, key = 'sociodem_valor_propiedad_hasta',
+                                                                 help='En millones de pesos, por ejemplo: 180')
+        else:
+            with col_sociodem_valor_propiedades_2:
+                sociodem_valor_propiedad_desde = st.number_input('Valor', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
+                                                                 help='En millones de pesos, por ejemplo: 120.5')
+
+        # Layout para tener las entradas en la misma fila
+        col_sociodem_m2_propiedad_1, col_sociodem_m2_propiedad_2,  col_sociodem_m2_propiedad_3 = st.columns([2, 1, 1])
+        
+        with col_sociodem_m2_propiedad_1:
+            sociodem_m2_propiedad_rango = st.selectbox("Filtro de m2 de propiedad", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_m2_propiedad_rango')
+            
+        if sociodem_m2_propiedad_rango == "Rango":
+            # Input para el precio "desde"
+            with col_sociodem_m2_propiedad_2:
+                sociodem_m2_propiedad_desde = st.number_input('m2 desde', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
+            # Input para el precio "hasta"
+            with col_sociodem_m2_propiedad_3:
+                sociodem_m2_propiedad_hasta = st.number_input('m2 hasta', min_value=0, value=None, key = 'sociodem_m2_propiedad_hasta')
+        else:
+            with col_sociodem_m2_propiedad_2:
+                sociodem_m2_propiedad_desde = st.number_input('m2 propiedad', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
+                
     # Columna 5: Selectbox
     with col5:
         # Layout para tener las entradas en la misma fila
@@ -622,62 +679,15 @@ def main():
         
         sociodem_marca_vehiculo = st.multiselect('Marca del vehículo', brand_vehicle, placeholder = 'Selecciona marcas de vehículos', key='sociodem_marca_vehiculo')
 
-        # Layout para tener las entradas en la misma fila
-        col_sociodem_n_propiedades_1, col_sociodem_n_propiedades_2, col_sociodem_n_propiedades_3 = st.columns([2, 1, 1])
+        # =============================================================================
+        # Parametros de Cluster
+        # =============================================================================
         
-        with col_sociodem_n_propiedades_1:
-            sociodem_n_propiedades_rango = st.selectbox("Filtro de N° propiedades", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_n_propiedades_rango')
-
-        if sociodem_n_propiedades_rango == "Rango":
-            # Input para el precio "desde"
-            with col_sociodem_n_propiedades_2:
-                sociodem_n_propiedades_desde = st.number_input('N° desde', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
-            # Input para el precio "hasta"
-            with col_sociodem_n_propiedades_3:
-                sociodem_n_propiedades_hasta = st.number_input('N° hasta', min_value=0, value=None, key = 'sociodem_n_propiedades_hasta')
-        else:
-            with col_sociodem_n_propiedades_2:
-                sociodem_n_propiedades_desde = st.number_input('N° propiedades', min_value=0, value=None, key = 'sociodem_n_propiedades_desde')
-
-        sociodem_tipo_propiedad = st.multiselect('Tipo de propiedad', property_type, placeholder = 'Selecciona tipos de propiedades', key='sociodem_tipo_propiedad')
-
-        # Layout para tener las entradas en la misma fila
-        col_sociodem_valor_propiedades_1, col_sociodem_valor_propiedades_2,  col_sociodem_valor_propiedades_3 = st.columns([2, 1, 1])
+        st.header("Clusters")
         
-        with col_sociodem_valor_propiedades_1:
-            sociodem_valor_propiedades_rango = st.selectbox("Filtro valor propiedad (en $M)", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_valor_propiedades_rango')
+        cluster_cluster = st.multiselect('Cluster', cluster, placeholder = 'Selecciona un cluster', key='cluster_cluster',
+                                         help='Conjunto de características que deben cumplir los clientes, que varían dependiendo del cluster elegido. Para ver qué características tienen los cluster, ver hoja "Clusters" de excel online "Complilado audiencias"')
         
-        if sociodem_valor_propiedades_rango == "Rango":
-            # Input para el precio "desde"
-            with col_sociodem_valor_propiedades_2:
-                sociodem_valor_propiedad_desde = st.number_input('Valor desde', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
-                                                                 help='En millones de pesos, por ejemplo: 120.5')
-            # Input para el precio "hasta"
-            with col_sociodem_valor_propiedades_3:
-                sociodem_valor_propiedad_hasta = st.number_input('Valor hasta', min_value=0, value=None, key = 'sociodem_valor_propiedad_hasta',
-                                                                 help='En millones de pesos, por ejemplo: 180')
-        else:
-            with col_sociodem_valor_propiedades_2:
-                sociodem_valor_propiedad_desde = st.number_input('Valor', min_value=0, value=None, key = 'sociodem_valor_propiedad_desde',
-                                                                 help='En millones de pesos, por ejemplo: 120.5')
-
-        # Layout para tener las entradas en la misma fila
-        col_sociodem_m2_propiedad_1, col_sociodem_m2_propiedad_2,  col_sociodem_m2_propiedad_3 = st.columns([2, 1, 1])
-        
-        with col_sociodem_m2_propiedad_1:
-            sociodem_m2_propiedad_rango = st.selectbox("Filtro de m2 de propiedad", rango_opciones, index=None, placeholder = 'Selecciona un filtro', key='sociodem_m2_propiedad_rango')
-            
-        if sociodem_m2_propiedad_rango == "Rango":
-            # Input para el precio "desde"
-            with col_sociodem_m2_propiedad_2:
-                sociodem_m2_propiedad_desde = st.number_input('m2 desde', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
-            # Input para el precio "hasta"
-            with col_sociodem_m2_propiedad_3:
-                sociodem_m2_propiedad_hasta = st.number_input('m2 hasta', min_value=0, value=None, key = 'sociodem_m2_propiedad_hasta')
-        else:
-            with col_sociodem_m2_propiedad_2:
-                sociodem_m2_propiedad_desde = st.number_input('m2 propiedad', min_value=0, value=None, key = 'sociodem_m2_propiedad_desde')
-
     # Crear el formulario
     with st.form(key='my_form'):
         # Botón de submit
@@ -802,6 +812,7 @@ def main():
             json_output["10_loyalty"]["canje"] = [lyty_canje_rango, lyty_canje_desde]
         json_output["11_seguros"]["lapso"] = sf_lapso
         json_output["11_seguros"]["seguros"] = [dict_reemplazo["sf_seguros"].get(item,item) for item in sf_seguros]
+        json_output["12_cluster"]["cluster"] = cluster_cluster
         
         # Formatea el JSON para que quede como el output que entrega el formulario de Microsoft
         json_output_formated = formateo_json(json_output)

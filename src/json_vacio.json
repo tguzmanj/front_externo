@@ -77,5 +77,8 @@
   "11_seguros": { 
     "lapso": "",
    	"seguros": ""
+  },
+  "12_cluster": {
+    "cluster": ""
   }
 }  

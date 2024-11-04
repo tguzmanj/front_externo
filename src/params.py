@@ -382,6 +382,7 @@ alternativas = {'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS
                 'marital_status':["Soltero", 'Casado', 'Divorciado', 'Viudo', 'Unión libre'],
                 'educational_level':['Enseñanza básica', 'Enseñanza Media', 'Técnico profesional', 'Universitario'],
                 'lifestyle_objetivo': ["Branding", "Performance"],
+                'cluster': ["Cluster poder adquisitivo medio", "Cluster poder adquisitivo alto"],
                 'sf_seguros':['Automotriz',
                             'Cesantía',
                             'Cesantía tarjeta',
