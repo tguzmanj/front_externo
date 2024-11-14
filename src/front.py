@@ -283,13 +283,13 @@ def main():
         if lyty_acumul_rango == "Rango":
             # Input para el precio "desde"
             with col_lyty_acumul_2:
-                lyty_acumul_desde = st.number_input('Acumulación desde', min_value=0, value=None, key='lyty_acumul_desde')
+                lyty_acumul_desde = st.number_input('Acumulación desde', min_value=0, value=None, key='lyty_acumul_desde', help = 'Por ejemplo: 5000')
             # Input para el precio "hasta"
             with col_lyty_acumul_3:
-                lyty_acumul_hasta = st.number_input('Acumulación hasta', min_value=0, value=None, key='lyty_acumul_hasta')
+                lyty_acumul_hasta = st.number_input('Acumulación hasta', min_value=0, value=None, key='lyty_acumul_hasta', help = 'Por ejemplo: 30000')
         else:
             with col_lyty_acumul_2:
-                lyty_acumul_desde = st.number_input('Acumulación', min_value=0, value=None, key='lyty_acumul_desde')
+                lyty_acumul_desde = st.number_input('Acumulación', min_value=0, value=None, key='lyty_acumul_desde', help = 'Por ejemplo: 5000')
         
         # Layout para tener las entradas en la misma fila
         col_lyty_canje_1, col_lyty_canje_2,  col_lyty_canje_3 = st.columns([2, 1, 1])
@@ -299,13 +299,13 @@ def main():
         if lyty_canje_rango == "Rango":
             # Input para el precio "desde"
             with col_lyty_canje_2:
-                lyty_canje_desde = st.number_input('Canje desde', min_value=0, value=None, key='lyty_canje_desde')
+                lyty_canje_desde = st.number_input('Canje desde', min_value=0, value=None, key='lyty_canje_desde', help = 'Por ejemplo: 5000')
             # Input para el precio "hasta"
             with col_lyty_canje_3:
-                lyty_canje_hasta = st.number_input('Canje hasta', min_value=0, value=None, key='lyty_canje_hasta')
+                lyty_canje_hasta = st.number_input('Canje hasta', min_value=0, value=None, key='lyty_canje_hasta', help = 'Por ejemplo: 30000')
         else:
             with col_lyty_canje_2:
-                lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde')
+                lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde', help = 'Por ejemplo: 5000')
         
         # Lapso ###############################################################
         lyty_lapso = st.selectbox('Lapso', lapso_fijo, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
@@ -686,7 +686,7 @@ def main():
         st.header("Clusters")
         
         cluster_cluster = st.multiselect('Cluster', cluster, placeholder = 'Selecciona un cluster', key='cluster_cluster',
-                                         help='Conjunto de características que deben cumplir los clientes, que varían dependiendo del cluster elegido. Para ver qué características tienen los cluster, ver hoja "Clusters" de excel online "Complilado audiencias"')
+                                         help='Conjunto de características que deben cumplir los clientes, que varían dependiendo del cluster elegido. Para ver qué características tienen los cluster, ver hoja "Clusters" de excel online "Compilado audiencias"')
         
     # Crear el formulario
     with st.form(key='my_form'):
