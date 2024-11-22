@@ -209,6 +209,7 @@ anunciante_list = alternativas['anunciante']
 anunciante_list.sort()
 lapso_predefinido = alternativas['lapso_predefinido']
 lapso_fijo = alternativas['lapso_fijo']
+lapso_seguros = alternativas['lapso_seguros']
 rango_opciones = alternativas['rango_opciones']
 brands = alternativas['marcas']
 comunas = alternativas['comunas']
@@ -517,7 +518,7 @@ def main():
         st.header("Seguros Falabella")
         
         # Lapso ###############################################################
-        sf_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
+        sf_lapso = st.selectbox('Lapso', lapso_seguros, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
                                 help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
         # if sf_lapso == 'Crear mi propio rango':
         #     sf_lapso_perso = st.date_input(
