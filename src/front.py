@@ -209,7 +209,7 @@ anunciante_list = alternativas['anunciante']
 anunciante_list.sort()
 lapso_predefinido = alternativas['lapso_predefinido']
 lapso_fijo = alternativas['lapso_fijo']
-lapso_seguros = alternativas['lapso_seguros']
+lapso_lyty = alternativas['lapso_lyty']
 rango_opciones = alternativas['rango_opciones']
 brands = alternativas['marcas']
 comunas = alternativas['comunas']
@@ -309,7 +309,7 @@ def main():
                 lyty_canje_desde = st.number_input('Canje', min_value=0, value=None, key='lyty_canje_desde', help = 'Por ejemplo: 5000')
         
         # Lapso ###############################################################
-        lyty_lapso = st.selectbox('Lapso', lapso_fijo, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
+        lyty_lapso = st.selectbox('Lapso', lapso_lyty, index=None, placeholder = 'Selecciona un lapso', key='lyty_lapso',
                                   help='Corresponde al periodo de tiempo que se considerará la acumulación y/o el canje')
         
     # Columna 2: 4 selectbox y 4 multiselect
@@ -518,7 +518,7 @@ def main():
         st.header("Seguros Falabella")
         
         # Lapso ###############################################################
-        sf_lapso = st.selectbox('Lapso', lapso_seguros, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
+        sf_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = "Selecciona un lapso", key='sf_lapso',
                                 help='Corresponde al periodo de tiempo que se considerará en la compra del seguro.')
         # if sf_lapso == 'Crear mi propio rango':
         #     sf_lapso_perso = st.date_input(
