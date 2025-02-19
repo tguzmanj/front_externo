@@ -921,7 +921,7 @@ if __name__ == "__main__":
         agencia_usuario = st.session_state['name'][st.session_state['name'].find("[")+1:st.session_state['name'].find("]")] 
         if agencia_usuario!="FALABELLA":
             usuario_externo = True
-            holding_list = [*st.session_state['roles']]
+            holding_list = [*agencia_usuario]
         else:
             usuario_externo = False
             holding_list = alternativas['holding']
