@@ -103,7 +103,7 @@ def parte_superior():
             col_cont_1, col_cont_2, col_cont_3 = st.columns(3)
             
             with col_cont_1:
-                holding = st.selectbox('Holding', holding_list, index=None, placeholder = 'Selecciona un holding', key='holding')
+                holding = st.selectbox('Holding', holding_list, index=index_holding, placeholder = 'Selecciona un holding', key='holding')
                 anunciante = stDatalist(label='Anunciante', options=[""]+anunciante_list, key='anunciante')
                 campania = st.text_input("Campaña", key='campania')
             
@@ -921,10 +921,12 @@ if __name__ == "__main__":
         agencia_usuario = st.session_state['name'][st.session_state['name'].find("[")+1:st.session_state['name'].find("]")] 
         if agencia_usuario!="FALABELLA":
             usuario_externo = True
-            holding_list = [*agencia_usuario]
+            holding_list = [agencia_usuario]
+            index_holding = 0
         else:
             usuario_externo = False
             holding_list = alternativas['holding']
+            index_holding = None
             
         parte_superior()
         
