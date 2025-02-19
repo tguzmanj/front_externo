@@ -213,8 +213,6 @@ logo = logo.resize( [int(half * s) for s in logo.size] )
 cats_f = alternativas['categorias_f']
 # cats_f = [eliminar_antes_del_guion(x) for x in cats_f]
 
-
-    
 anunciante_list = alternativas['anunciante']
 anunciante_list.sort()
 lapso_predefinido = alternativas['lapso_predefinido']
@@ -903,9 +901,9 @@ if __name__ == "__main__":
     
     authenticator.login()
     
-    if st.session_state['username'] in alternativas['usuarios_ipg']:
+    if st.session_state['agencia']!="FALABELLA":
         usuario_externo = True
-        holding_list = ["IPG"]
+        holding_list = [*st.session_state['agencia']]
     else:
         usuario_externo = False
         holding_list = alternativas['holding']
