@@ -900,15 +900,6 @@ authenticator = stauth.Authenticate(
 if __name__ == "__main__":
     
     authenticator.login()
-    
-    # Obtiene lo que está entre corchetes
-    agencia_usuario = st.session_state['name'][st.session_state['name'].find("[")+1:st.session_state['name'].find("]")] 
-    if agencia_usuario!="FALABELLA":
-        usuario_externo = True
-        holding_list = [*st.session_state['roles']]
-    else:
-        usuario_externo = False
-        holding_list = alternativas['holding']
         
     # Esta parte es para que aparezca el botón de "anunciante", ya que no aparece de inmediato
     if 'rerun' not in st.session_state:
@@ -926,6 +917,15 @@ if __name__ == "__main__":
     
     if st.session_state["authentication_status"]:
         
+        # Obtiene lo que está entre corchetes
+        agencia_usuario = st.session_state['name'][st.session_state['name'].find("[")+1:st.session_state['name'].find("]")] 
+        if agencia_usuario!="FALABELLA":
+            usuario_externo = True
+            holding_list = [*st.session_state['roles']]
+        else:
+            usuario_externo = False
+            holding_list = alternativas['holding']
+            
         parte_superior()
         
         if st.session_state.siguiente:
