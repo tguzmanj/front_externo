@@ -196,9 +196,9 @@ credentials_json = st.secrets["GOOGLE_DRIVE"]["GOOGLE_APPLICATION_CREDENTIALS_JS
 credentials_dict = json.loads(credentials_json)
 
 # Leer las credenciales desde secrets
-credentials_yaml = st.secrets["LOGIN_INFO"]["STREAMLIT_CREDENTIALS_YAML"]
-# Convertir el string YAML a un diccionario
-config = yaml.load(credentials_yaml, Loader=SafeLoader)
+# credentials_yaml = st.secrets["LOGIN_INFO"]["STREAMLIT_CREDENTIALS_YAML"]
+# # Convertir el string YAML a un diccionario
+# config = yaml.load(credentials_yaml, Loader=SafeLoader)
 
 santiago_tz = pytz.timezone('America/Santiago')
 ayer = (datetime.date.today() - datetime.timedelta(days=1))
@@ -883,14 +883,15 @@ def main():
 # Autenticación
 # =============================================================================
 
-# with open('src/conn/login.yml', encoding='utf8') as file:
-#     config = yaml.load(file, Loader=SafeLoader)
+with open('src/conn/login.yml', encoding='utf8') as file:
+    config = yaml.load(file, Loader=SafeLoader)
 
 authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days']
+    config['cookie']['expiry_days'],
+    config['credentials']["roles"]
 )
 
 # =============================================================================
@@ -901,7 +902,9 @@ if __name__ == "__main__":
     
     authenticator.login()
     
-    if st.session_state['roles']!="FALABELLA":
+    # Obtiene lo que está entre corchetes
+    agencia_usuario = st.session_state['name'][st.session_state['name'].find("[")+1:st.session_state['name'].find("]")] 
+    if agencia_usuario!="FALABELLA":
         usuario_externo = True
         holding_list = [*st.session_state['roles']]
     else:
@@ -933,6 +936,3 @@ if __name__ == "__main__":
         st.error('Usuario/contraseña es incorrecto')
     elif st.session_state["authentication_status"] is None:
         st.warning('Por favor, ingresa tu usuario y contraseña')
-
-        
-        
