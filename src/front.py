@@ -120,11 +120,15 @@ def parte_superior():
                     mes_implementacion = f"{str(report_month).zfill(2)}/{report_year}"
                     
             with col_cont_3:
-                solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None, key='solicitada_cliente')
-                if solicitada_cliente == "Sí":
-                    solicitante = st.text_input("Solicitante", key='solicitante')
-                else:
-                    solicitante = ''
+                if usuario_externo:
+                    solicitada_cliente = "Sí"
+                    solicitante = st.session_state['name']
+                else:                    
+                    solicitada_cliente = st.radio("¿Solicitada por cliente?", ["Sí", "No"], horizontal = True, index=None, key='solicitada_cliente')
+                    if solicitada_cliente == "Sí":
+                        solicitante = st.text_input("Solicitante", key='solicitante')
+                    else:
+                        solicitante = ''
                 descripcion = st.text_input("Breve descripción de la audiencia a solicitar", key = 'descripcion')
                 # Botón de avanzar
                 if st.button("Siguiente", on_click=collapse_expander):
@@ -188,9 +192,13 @@ def reglas_enviar_formulario(json):
 
 # Leer las credenciales desde secrets
 credentials_json = st.secrets["GOOGLE_DRIVE"]["GOOGLE_APPLICATION_CREDENTIALS_JSON"]
-
 # Convertir el JSON a un diccionario
 credentials_dict = json.loads(credentials_json)
+
+# Leer las credenciales desde secrets
+credentials_yaml = st.secrets["LOGIN_INFO"]["STREAMLIT_CREDENTIALS_YAML"]
+# Convertir el string YAML a un diccionario
+config = yaml.load(credentials_yaml, Loader=SafeLoader)
 
 santiago_tz = pytz.timezone('America/Santiago')
 ayer = (datetime.date.today() - datetime.timedelta(days=1))
@@ -204,7 +212,9 @@ logo = logo.resize( [int(half * s) for s in logo.size] )
 
 cats_f = alternativas['categorias_f']
 # cats_f = [eliminar_antes_del_guion(x) for x in cats_f]
-holding_list = alternativas['holding']
+
+
+    
 anunciante_list = alternativas['anunciante']
 anunciante_list.sort()
 lapso_predefinido = alternativas['lapso_predefinido']
@@ -233,7 +243,6 @@ def main():
 
     # Crear las 5 columnas
     col1, col2, col3, col4, col5 = st.columns(5)
-    
     
     # Columna 1: Selector múltiple de 5 opciones y selectbox con calendario condicional
     with col1:
@@ -876,8 +885,8 @@ def main():
 # Autenticación
 # =============================================================================
 
-with open('src/conn/login.yml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
+# with open('src/conn/login.yml', encoding='utf8') as file:
+#     config = yaml.load(file, Loader=SafeLoader)
 
 authenticator = stauth.Authenticate(
     config['credentials'],
@@ -887,8 +896,6 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
 )
 
-
-
 # =============================================================================
 # Aplicativo
 # =============================================================================
@@ -897,6 +904,13 @@ if __name__ == "__main__":
     
     authenticator.login()
     
+    if st.session_state['username'] in alternativas['usuarios_ipg']:
+        usuario_externo = True
+        holding_list = ["IPG"]
+    else:
+        usuario_externo = False
+        holding_list = alternativas['holding']
+        
     # Esta parte es para que aparezca el botón de "anunciante", ya que no aparece de inmediato
     if 'rerun' not in st.session_state:
         st.session_state.rerun = True
@@ -919,9 +933,9 @@ if __name__ == "__main__":
             main()
             
     elif st.session_state["authentication_status"] is False:
-        st.error('Username/password is incorrect')
+        st.error('Usuario/contraseña es incorrecto')
     elif st.session_state["authentication_status"] is None:
-        st.warning('Please enter your username and password')
+        st.warning('Por favor, ingresa tu usuario y contraseña')
 
         
         

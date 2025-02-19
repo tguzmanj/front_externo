@@ -370,7 +370,8 @@ dict_reemplazo = {"comunas": {'Arica':	'ARICA',
                                 'Vida con bonificación':	'VIDA CON BONIFICACIÓN'}
 
                   }
-alternativas = {'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS", "Sin holding"],
+alternativas = {'usuarios_ipg':["natalia_gonzalez"],
+                'holding':["DENTSU", "GROUP M", "HAVAS", "IPG", "OMG", "PUBLICIS", "Sin holding"],
                 'lapso_predefinido':['3 meses', '6 meses', '12 meses', '24 meses', "36 meses", 'Crear mi propio rango'],
                 'lapso_fijo':['3 meses', '6 meses', '12 meses', '24 meses', "36 meses"],
                 'lapso_lyty':['1 mes', '3 meses', '12 meses'],
