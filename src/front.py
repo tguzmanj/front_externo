@@ -901,9 +901,9 @@ if __name__ == "__main__":
     
     authenticator.login()
     
-    if st.session_state['agencia']!="FALABELLA":
+    if st.session_state['roles']!="FALABELLA":
         usuario_externo = True
-        holding_list = [*st.session_state['agencia']]
+        holding_list = [*st.session_state['roles']]
     else:
         usuario_externo = False
         holding_list = alternativas['holding']
