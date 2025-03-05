@@ -15,6 +15,7 @@ import pytz
 from calendar import month_abbr
 from yaml.loader import SafeLoader
 from PIL import Image
+import unicodedata
 
 from streamlit_datalist import stDatalist
 
@@ -840,6 +841,13 @@ def main():
                 
             # Incrementar el ID correlativo y guardarlo
             st.session_state.correlativo += 1
+            
+            # Crear el nombre de la tabla en BQ
+            campania_procesada = campania.strip()
+            campania_procesada = ''.join((c for c in unicodedata.normalize('NFD', campania_procesada) if unicodedata.category(c) != 'Mn'))
+            # Elimina caracteres raros al string de la marca (primera marca si se ingresó más de una)
+            nombre_tabla_final = f"{anunciante}_{st.session_state.correlativo}_{campania_procesada}".upper().replace(" ","_").replace(".","").replace("-","_").replace('"',"").replace(',',"_").replace('/',"_").replace('&',"_").replace('(',"").replace(')',"").replace('+',"PLUS").replace('Ñ',"N")
+            json_output_formated["1_info_general"]["nombre_tabla"] = nombre_tabla_final
             
             # Agrega el nombre a la audiencia
             json_output_formated["1_info_general"]["nombre_unico"] = f"{datetime.datetime.now(tz=santiago_tz).strftime('%Y%m%d')}-{holding}-{anunciante}-a{st.session_state.correlativo}-{tipo_de_script(json_output_formated)}".replace(" ", "_")
