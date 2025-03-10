@@ -88,6 +88,8 @@ def parte_superior():
     global solicitante
     global descripcion
     
+    print("Desplegando parte superior")
+    
     authenticator.logout("Logout")
     
     # Crear las 3 columnas
@@ -203,7 +205,6 @@ config = yaml.load(credentials_yaml, Loader=SafeLoader)
 
 santiago_tz = pytz.timezone('America/Santiago')
 ayer = (datetime.date.today() - datetime.timedelta(days=1))
-directorio_credenciales = 'src/conn/credentials_module.json'
 # Configuración de página para formato wide
 st.set_page_config(page_title="Falabella Audiencias SelfService", layout="wide")
 
@@ -237,7 +238,7 @@ property_type = alternativas['property_type']
 cluster = alternativas['cluster']
 
 def main():
-    
+    print("Cargando main")
     st.button("Limpiar alternativas seleccionadas", on_click=clear_all)
 
     # Crear las 5 columnas
@@ -450,10 +451,10 @@ def main():
         # Comercios ###########################################################
         cmr_comercios = st.multiselect('Comercios a incluir', alternativas['comercios'], placeholder = 'Selecciona comercios a incluir', key='cmr_comercios',
                                        help='Son los comercios en los que deben haber comprado para aparecer en la audiencia.')
-        cmr_keywords = st.text_input("Keywords a incluir", key='cmr_keywords')
+        # cmr_keywords = st.text_input("Keywords a incluir", key='cmr_keywords')
         cmr_comercios_exclusion = st.multiselect('Comercios a excluir', alternativas['comercios'], placeholder = 'Selecciona comercios a excluir', key='cmr_comercios_exclusion',
-                                                 help='La audiencia resultante no tendrá transacciones realizadas en estos comercios')
-        cmr_keywords_exclusion = st.text_input("Keywords a excluir", key='cmr_keywords_exclusion')
+                                                  help='La audiencia resultante no tendrá transacciones realizadas en estos comercios')
+        # cmr_keywords_exclusion = st.text_input("Keywords a excluir", key='cmr_keywords_exclusion')
         
         # Lapso ###############################################################
         cmr_lapso = st.selectbox('Lapso', lapso_predefinido, index=None, placeholder = 'Selecciona un lapso', key='cmr_lapso',
@@ -792,8 +793,8 @@ def main():
             json_output["8_info_cmr"]["lapso"] = cmr_lapso
         json_output["8_info_cmr"]["comercios"] = cmr_comercios
         json_output["8_info_cmr"]["comercios_exclusion"] = cmr_comercios_exclusion
-        json_output["8_info_cmr"]["keywords"] = cmr_keywords
-        json_output["8_info_cmr"]["keywords_exclusion"] = cmr_keywords_exclusion
+        json_output["8_info_cmr"]["keywords"] = ''
+        json_output["8_info_cmr"]["keywords_exclusion"] = ''
         json_output["8_info_cmr"]["tipo_compra"] = cmr_tipo_compra
         json_output["8_info_cmr"]["tipo_compra_exclusion"] = cmr_tipo_compra_exclusion
         if cmr_precio_rango == "Rango":
@@ -894,12 +895,6 @@ def main():
 # with open('src/conn/login.yml', encoding='utf8') as file:
 #     config = yaml.load(file, Loader=SafeLoader)
 
-authenticator = stauth.Authenticate(
-    config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days']
-)
 
 # =============================================================================
 # Aplicativo
@@ -907,6 +902,14 @@ authenticator = stauth.Authenticate(
 
 if __name__ == "__main__":
     
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        config['cookie']['name'],
+        config['cookie']['key'],
+        config['cookie']['expiry_days']
+    )
+
+
     authenticator.login()
         
     # Esta parte es para que aparezca el botón de "anunciante", ya que no aparece de inmediato
