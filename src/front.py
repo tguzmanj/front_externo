@@ -53,7 +53,7 @@ def clear_all():
                     '_xsrf',
                     'name_cookie',
                     'name', 'correlativo', 
-                    'holding', 'anunciante', 'campania', 'solicitada_cliente', 'descripcion']: # No limpiar lo de arriba
+                    'holding', 'anunciante', 'campania', 'marca', 'solicitada_cliente', 'descripcion']: # No limpiar lo de arriba
             
             # Inicializarla dependiendo de qué es
             if type(st.session_state[i]) is list: # Para multiselect
@@ -87,6 +87,7 @@ def parte_superior():
     global solicitada_cliente
     global solicitante
     global descripcion
+    global marca
     
     print("Desplegando parte superior")
     
@@ -123,6 +124,7 @@ def parte_superior():
                     mes_implementacion = f"{str(report_month).zfill(2)}/{report_year}"
                     
             with col_cont_3:
+                marca = st.text_input("Marca", key='marca')
                 if usuario_externo:
                     solicitada_cliente = "Sí"
                     solicitante = st.session_state['name']
@@ -718,7 +720,9 @@ def main():
         json_output["1_info_general"]["solicitante"] = solicitante
         json_output["1_info_general"]["descripcion"] = descripcion
         json_output["1_info_general"]["mes_implementacion"] = mes_implementacion
+        json_output["1_info_general"]["marca"] = marca
         json_output["1_info_general"]["campania"] = campania
+        json_output["1_info_general"]["tipo_de_venta"] = ''
         json_output["1_info_general"]["fecha_solicitud"] = datetime.datetime.now(tz=santiago_tz).strftime('%Y-%m-%d %H:%M:%S')        
         
         json_output["2_info_lifestyle"]["lifestyle_seleccionado"] = lifestyle_lifestyles
