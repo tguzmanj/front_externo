@@ -99,7 +99,7 @@ def parte_superior():
     with col_sup_1:
         
         st.image(logo)
-        st.title("Formulario Falabella Audienciasss")
+        st.title("Formulario Falabella Audiencias")
     
     with col_sup_2:
     
