@@ -163,7 +163,7 @@ def reglas_enviar_formulario(json):
     # Si se ingresó Programa de lealtad, debe estar ingresado el lapso y uno de los otros dos campos
     if any(value != "" for value in json['10_loyalty'].values()):
         if (json['10_loyalty']['lapso'] == '') | ((json['10_loyalty']['acumulacion'] == '') & (json['10_loyalty']['canje'] == '')):
-            st.warning("Audiencias de 'Programa de lealtad' deben tener el lapso y acumulación o canje ingresados")
+            st.warning("Audiencias de 'Programas de lealtad' deben tener el lapso y acumulación o canje ingresados")
             return False
     # Si se ingresó cross, debe estar ingresado el lapso y categorías
     if any(value != "" for value in json['3_info_cross'].values()):
