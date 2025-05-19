@@ -253,7 +253,7 @@ def main():
         # Parametros Lifestyle
         # =============================================================================
         
-        st.header("Lifestyle")
+        st.header("Lifestyles")
         lifestyle_lifestyles = st.multiselect('Lifestyle', alternativas['lifestyles'], placeholder = 'Selecciona lifestyles', key='lifestyle_lifestyles',
                                               help='Corresponde a caracterizaciones de clientes del holding de acuerdo a su transaccionalidad en los últimos 12 meses.')
         lifestyle_objetivo = st.selectbox('Objetivo de la campaña', alternativas['lifestyle_objetivo'], index=None, placeholder = "Selecciona un objetivo", key='lifestyle_objetivo',
